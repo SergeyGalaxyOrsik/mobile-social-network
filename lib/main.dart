@@ -1,15 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: WidgetsBinding.instance);
+  MyApp.splashStartedAt = DateTime.now();
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  static DateTime? splashStartedAt;
+
+  /// Минимальное время показа сплэша (не скрывать раньше этого с момента старта).
+  static const _splashMinDuration = Duration(seconds: 5);
+
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final elapsed = DateTime.now().difference(splashStartedAt ?? DateTime.now());
+      final remaining = _splashMinDuration - elapsed;
+      if (remaining > Duration.zero) {
+        await Future.delayed(remaining);
+      }
+      FlutterNativeSplash.remove();
+    });
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
