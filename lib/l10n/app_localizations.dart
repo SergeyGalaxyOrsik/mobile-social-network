@@ -125,7 +125,7 @@ abstract class AppLocalizations {
   /// No description provided for @helloUser.
   ///
   /// In en, this message translates to:
-  /// **'Hello, {name}!'**
+  /// **'Hello,\n{name}!'**
   String helloUser(String name);
 
   /// No description provided for @login.
@@ -187,6 +187,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Name (optional)'**
   String get displayNameOptional;
+
+  /// No description provided for @displayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname'**
+  String get displayName;
+
+  /// No description provided for @enterName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter nickname'**
+  String get enterName;
 
   /// No description provided for @passwordMinLength.
   ///

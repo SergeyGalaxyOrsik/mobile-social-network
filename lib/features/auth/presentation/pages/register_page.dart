@@ -6,6 +6,7 @@ import 'package:mobile_social_network/l10n/app_localizations.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../widgets/input_widget.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -35,23 +36,19 @@ class _RegisterPageState extends State<RegisterPage> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     context.read<AuthBloc>().add(
-          AuthSignUpRequested(
-            email: _emailController.text.trim(),
-            password: _passwordController.text,
-            displayName: _displayNameController.text.trim().isNotEmpty
-                ? _displayNameController.text.trim()
-                : null,
-          ),
-        );
+      AuthSignUpRequested(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        displayName: _displayNameController.text.trim(),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.register),
-      ),
+      appBar: AppBar(title: Text(l10n.register)),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -64,60 +61,39 @@ class _RegisterPageState extends State<RegisterPage> {
                 children: [
                   Text(
                     l10n.createAccount,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-                  TextFormField(
+                  InputAuthWidget(
                     controller: _displayNameController,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(
-                      labelText: l10n.displayNameOptional,
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.person_outline),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(
-                      labelText: l10n.email,
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.email_outlined),
-                    ),
+                    labelText: l10n.displayName,
+                    prefixIcon: const Icon(Icons.person_outline),
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) {
-                        return l10n.enterEmail;
-                      }
+                      final t = v?.trim() ?? '';
+                      if (t.isEmpty) return l10n.enterName;
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  InputAuthWidget(
+                    controller: _emailController,
+                    labelText: l10n.email,
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    validator: (v) {
+                      final t = v?.trim() ?? '';
+                      if (t.isEmpty) return l10n.enterEmail;
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  InputAuthWidget(
                     controller: _passwordController,
+                    labelText: l10n.password,
+                    prefixIcon: const Icon(Icons.lock_outline),
                     obscureText: _obscurePassword,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(
-                      labelText: l10n.password,
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                    ),
                     validator: (v) {
                       if (v == null || v.isEmpty) {
                         return l10n.enterPassword;
@@ -127,29 +103,38 @@ class _RegisterPageState extends State<RegisterPage> {
                       }
                       return null;
                     },
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  InputAuthWidget(
                     controller: _confirmPasswordController,
                     obscureText: _obscureConfirm,
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (_) => _submit(),
-                    decoration: InputDecoration(
-                      labelText: l10n.confirmPassword,
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirm
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureConfirm = !_obscureConfirm;
-                          });
-                        },
+                    labelText: l10n.confirmPassword,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirm
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirm = !_obscureConfirm;
+                        });
+                      },
                     ),
                     validator: (v) {
                       if (v == null || v != _passwordController.text) {
@@ -165,7 +150,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(state.message),
-                            backgroundColor: Theme.of(context).colorScheme.error,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
                           ),
                         );
                       }
@@ -181,7 +168,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             ? const SizedBox(
                                 height: 22,
                                 width: 22,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : Text(l10n.registerButton),
                       );

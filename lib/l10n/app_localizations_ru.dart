@@ -22,7 +22,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String helloUser(String name) {
-    return 'Привет, $name!';
+    return 'Привет,\n$name!';
   }
 
   @override
@@ -54,6 +54,12 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get displayNameOptional => 'Имя (необязательно)';
+
+  @override
+  String get displayName => 'Никнейм';
+
+  @override
+  String get enterName => 'Введите никнейм';
 
   @override
   String get passwordMinLength => 'Пароль не менее 6 символов';

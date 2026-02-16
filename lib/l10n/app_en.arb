@@ -4,7 +4,7 @@
   "home": "Home",
   "settings": "Settings",
   "logout": "Log out",
-  "helloUser": "Hello, {name}!",
+  "helloUser": "Hello,\n{name}!",
   "@helloUser": {
     "placeholders": {
       "name": {
@@ -22,6 +22,8 @@
   "register": "Register",
   "createAccount": "Create account",
   "displayNameOptional": "Name (optional)",
+  "displayName": "Nickname",
+  "enterName": "Enter nickname",
   "passwordMinLength": "Password must be at least 6 characters",
   "confirmPassword": "Confirm password",
   "passwordsDoNotMatch": "Passwords do not match",

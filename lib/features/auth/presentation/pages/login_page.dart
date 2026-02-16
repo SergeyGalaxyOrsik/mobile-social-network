@@ -31,11 +31,11 @@ class _LoginPageState extends State<LoginPage> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     context.read<AuthBloc>().add(
-          AuthSignInRequested(
-            email: _emailController.text.trim(),
-            password: _passwordController.text,
-          ),
-        );
+      AuthSignInRequested(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      ),
+    );
   }
 
   @override
@@ -54,9 +54,9 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   Text(
                     l10n.login,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
@@ -66,7 +66,10 @@ class _LoginPageState extends State<LoginPage> {
                     textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       labelText: l10n.email,
-                      border: const OutlineInputBorder(),
+                      labelStyle: Theme.of(context).textTheme.bodyLarge,
+                      border: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
                       prefixIcon: const Icon(Icons.email_outlined),
                     ),
                     validator: (v) {
@@ -84,7 +87,10 @@ class _LoginPageState extends State<LoginPage> {
                     onFieldSubmitted: (_) => _submit(),
                     decoration: InputDecoration(
                       labelText: l10n.password,
-                      border: const OutlineInputBorder(),
+                      labelStyle: Theme.of(context).textTheme.bodyLarge,
+                      border: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -113,7 +119,9 @@ class _LoginPageState extends State<LoginPage> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(state.message),
-                            backgroundColor: Theme.of(context).colorScheme.error,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
                           ),
                         );
                       }
@@ -126,7 +134,9 @@ class _LoginPageState extends State<LoginPage> {
                             ? const SizedBox(
                                 height: 22,
                                 width: 22,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : Text(l10n.signIn),
                       );

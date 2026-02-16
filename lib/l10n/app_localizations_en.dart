@@ -22,7 +22,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String helloUser(String name) {
-    return 'Hello, $name!';
+    return 'Hello,\n$name!';
   }
 
   @override
@@ -54,6 +54,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get displayNameOptional => 'Name (optional)';
+
+  @override
+  String get displayName => 'Nickname';
+
+  @override
+  String get enterName => 'Enter nickname';
 
   @override
   String get passwordMinLength => 'Password must be at least 6 characters';
