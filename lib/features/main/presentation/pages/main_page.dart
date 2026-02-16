@@ -36,23 +36,36 @@ class _MainPageState extends State<MainPage> {
 
   Widget _buildHomeContent() {
     final l10n = AppLocalizations.of(context)!;
-    return SafeArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 24, right: 24, top: 16),
-            child: Text(
-              l10n.helloUser(widget.user.displayName ?? widget.user.email),
-              style: Theme.of(context).textTheme.displayMedium,
-              textAlign: TextAlign.left,
+    return NestedScrollView(
+      headerSliverBuilder: (context, innerBoxIsScrolled) => [
+        SliverToBoxAdapter(
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 24, right: 24, top: 16),
+                  child: Text(
+                    l10n.helloUser(
+                      widget.user.displayName ?? widget.user.email,
+                    ),
+                    style: Theme.of(context).textTheme.displayMedium,
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+                Divider(
+                  height: 2,
+                  thickness: 2,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+              ],
             ),
           ),
-          Divider(thickness: 2, color: Theme.of(context).colorScheme.outline),
-          const SizedBox(height: 16),
-          const Expanded(child: FeedPage()),
-        ],
-      ),
+        ),
+      ],
+      body: const FeedPage(),
     );
   }
 

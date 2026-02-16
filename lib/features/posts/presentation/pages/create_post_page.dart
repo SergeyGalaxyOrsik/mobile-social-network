@@ -52,11 +52,14 @@ class _CreatePostPageState extends State<CreatePostPage> {
     final text = _controller.text.trim();
     if (text.isEmpty || text.length > _kMaxPostLength) return;
 
+    final authState = context.read<AuthBloc>().state;
+    final userId = authState is AuthAuthenticated ? authState.user.id : null;
+
     final noteRepository = context.read<NoteRepository>();
     final feedCubit = context.read<FeedCubit>();
 
     final date = DateTime.now().toIso8601String();
-    final entity = NoteEntity(note: text, date: date, image: null);
+    final entity = NoteEntity(note: text, date: date, image: null, userId: userId);
     final id = await noteRepository.createNote(entity);
 
     await feedCubit.loadNotes();
@@ -76,7 +79,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
           final pngBytes = await imageToAsciiPng(bytes);
           final relativePath = await savePostImage(id, pngBytes);
           await noteRepository.updateNote(
-            NoteEntity(id: id, note: text, date: date, image: relativePath),
+            NoteEntity(id: id, userId: userId, note: text, date: date, image: relativePath),
           );
           feedCubit.removePending(id);
           await feedCubit.loadNotes();

@@ -25,6 +25,18 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<UserEntity?> getUserById(String id) async {
+    final db = await DatabaseHelper.instance.database;
+    final maps = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (maps.isEmpty) return null;
+    return UserEntity.fromMap(maps.first);
+  }
+
+  @override
   Future<bool> existsUserByEmail(String email) async {
     final user = await getUserByEmail(email);
     return user != null;

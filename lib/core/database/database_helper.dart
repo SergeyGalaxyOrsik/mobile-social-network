@@ -16,7 +16,7 @@ class DatabaseHelper {
     return _database!;
   }
 
-  static const int _dbVersion = 3;
+  static const int _dbVersion = 4;
 
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
@@ -34,7 +34,17 @@ class DatabaseHelper {
     const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const textType = 'TEXT NOT NULL';
 
-    if (version >= 3) {
+    if (version >= 4) {
+      await db.execute('''
+        CREATE TABLE notes (
+          id $idType,
+          userId TEXT,
+          note $textType,
+          date $textType,
+          image TEXT
+        )
+      ''');
+    } else if (version >= 3) {
       await db.execute('''
         CREATE TABLE notes (
           id $idType,
@@ -88,6 +98,9 @@ class DatabaseHelper {
         INSERT OR REPLACE INTO sqlite_sequence (name, seq)
         SELECT 'notes', COALESCE(MAX(id), 0) FROM notes
       ''');
+    }
+    if (oldVersion < 4) {
+      await db.execute('ALTER TABLE notes ADD COLUMN userId TEXT');
     }
   }
 

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
+import 'package:mobile_social_network/features/auth/domain/entities/user_entity.dart';
 import 'package:mobile_social_network/features/feed/presentation/cubit/feed_cubit.dart';
 import 'package:mobile_social_network/features/feed/presentation/cubit/feed_state.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/note_entity.dart';
@@ -30,18 +31,25 @@ class _FeedPageState extends State<FeedPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (state.pendingIds.isNotEmpty) _PublishingBar(count: state.pendingIds.length),
+            if (state.pendingIds.isNotEmpty)
+              _PublishingBar(count: state.pendingIds.length),
             Expanded(
               child: state.notes.isEmpty && state.pendingIds.isEmpty
                   ? const Center(child: Text('No posts yet'))
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.zero,
                       itemCount: state.notes.length,
                       itemBuilder: (context, index) {
                         final note = state.notes[index];
-                        final isPending = note.id != null && state.pendingIds.contains(note.id);
+                        final isPending =
+                            note.id != null &&
+                            state.pendingIds.contains(note.id);
+                        final author = note.userId != null
+                            ? state.authorByUserId[note.userId]
+                            : null;
                         return _PostCard(
                           note: note,
+                          author: author,
                           isPending: isPending,
                           resolveImagePath: _resolveImagePath,
                         );
@@ -97,82 +105,154 @@ class _PublishingBar extends StatelessWidget {
 class _PostCard extends StatelessWidget {
   const _PostCard({
     required this.note,
+    this.author,
     required this.isPending,
     required this.resolveImagePath,
   });
 
   final NoteEntity note;
+  final UserEntity? author;
   final bool isPending;
   final Future<String?> Function(String?) resolveImagePath;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Card(
+    final side = BorderSide(
+      color: Theme.of(context).colorScheme.outline,
+      width: 2,
+    );
+    return Container(
+      decoration: BoxDecoration(border: Border(bottom: side)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
         child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    note.note,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    note.date,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                  if (note.image != null) ...[
-                    const SizedBox(height: 8),
-                    FutureBuilder<String?>(
-                      future: resolveImagePath(note.image),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData || snapshot.data == null) {
-                          return const SizedBox.shrink();
-                        }
-                        final file = File(snapshot.data!);
-                        if (!file.existsSync()) {
-                          return const SizedBox.shrink();
-                        }
-                        final imagePath = snapshot.data!;
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (context) => _FullScreenPhotoPage(
-                                  imagePath: imagePath,
-                                ),
-                              ),
-                            );
-                          },
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.file(
-                              file,
-                              fit: BoxFit.contain,
-                              width: double.infinity,
-                              height: 300,
-                              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (author != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.outline,
                             ),
                           ),
-                        );
-                      },
+                          child: SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: author!.avatarUrl != null
+                                ? FutureBuilder<String?>(
+                                    future: resolveImagePath(author!.avatarUrl),
+                                    builder: (context, snapshot) {
+                                      if (!snapshot.hasData ||
+                                          snapshot.data == null) {
+                                        return const Icon(
+                                          Icons.person,
+                                          size: 40,
+                                        );
+                                      }
+                                      final file = File(snapshot.data!);
+                                      if (!file.existsSync()) {
+                                        return const Icon(
+                                          Icons.person,
+                                          size: 40,
+                                        );
+                                      }
+                                      return Image.file(
+                                        file,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            const Icon(Icons.person, size: 40),
+                                      );
+                                    },
+                                  )
+                                : const Icon(Icons.person, size: 30),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              author!.displayName?.isNotEmpty == true
+                                  ? author!.displayName!
+                                  : author!.email,
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                            Text(
+                              note.date,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
+                Text(note.note, style: Theme.of(context).textTheme.bodyLarge),
+
+                // const SizedBox(height: 8),
+                if (note.image != null) ...[
+                  const SizedBox(height: 8),
+                  FutureBuilder<String?>(
+                    future: resolveImagePath(note.image),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData || snapshot.data == null) {
+                        return const SizedBox.shrink();
+                      }
+                      final file = File(snapshot.data!);
+                      if (!file.existsSync()) {
+                        return const SizedBox.shrink();
+                      }
+                      final imagePath = snapshot.data!;
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (context) =>
+                                  _FullScreenPhotoPage(imagePath: imagePath),
+                            ),
+                          );
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(
+                            file,
+                            fit: BoxFit.contain,
+                            width: double.infinity,
+                            height: 300,
+                            errorBuilder: (_, __, ___) =>
+                                const SizedBox.shrink(),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ],
-              ),
+              ],
             ),
+
             if (isPending)
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surface.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Center(

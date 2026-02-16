@@ -35,14 +35,24 @@ void main() async {
   );
   final authBloc = AuthBloc(authRepository: authRepository);
 
-  runApp(MyApp(authBloc: authBloc, preferences: preferences));
+  runApp(MyApp(
+    authBloc: authBloc,
+    preferences: preferences,
+    userRepository: userRepository,
+  ));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key, required this.authBloc, required this.preferences});
+  const MyApp({
+    super.key,
+    required this.authBloc,
+    required this.preferences,
+    required this.userRepository,
+  });
 
   final AuthBloc authBloc;
   final SharedPreferences preferences;
+  final UserRepository userRepository;
 
   static DateTime? splashStartedAt;
 
@@ -125,7 +135,7 @@ class _MyAppState extends State<MyApp> {
             locale: _locale,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const _AuthGate(),
+            home: _AuthGate(userRepository: widget.userRepository),
           ),
         ),
       ),
@@ -136,7 +146,9 @@ class _MyAppState extends State<MyApp> {
 /// Проверяет авторизацию: при старте запрашивает CheckAuth,
 /// показывает Login или Main в зависимости от состояния.
 class _AuthGate extends StatefulWidget {
-  const _AuthGate();
+  const _AuthGate({required this.userRepository});
+
+  final UserRepository userRepository;
 
   @override
   State<_AuthGate> createState() => _AuthGateState();
@@ -155,11 +167,15 @@ class _AuthGateState extends State<_AuthGate> {
       builder: (context, state) {
         if (state is AuthAuthenticated) {
           final user = state.user;
-          return RepositoryProvider<NoteRepository>(
-            create: (_) => NoteRepositoryImpl(),
-            child: BlocProvider<FeedCubit>(
-              create: (context) =>
-                  FeedCubit(noteRepository: context.read<NoteRepository>()),
+          return RepositoryProvider<UserRepository>.value(
+            value: widget.userRepository,
+            child: RepositoryProvider<NoteRepository>(
+              create: (_) => NoteRepositoryImpl(),
+              child: BlocProvider<FeedCubit>(
+                create: (context) => FeedCubit(
+                  noteRepository: context.read<NoteRepository>(),
+                  userRepository: context.read<UserRepository>(),
+                ),
               child: Navigator(
                 onGenerateInitialRoutes: (_, __) => [
                   MaterialPageRoute<void>(
@@ -176,6 +192,7 @@ class _AuthGateState extends State<_AuthGate> {
                 },
               ),
             ),
+          ),
           );
         }
         if (state is AuthUnauthenticated || state is AuthError) {
