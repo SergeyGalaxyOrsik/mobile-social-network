@@ -99,4 +99,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageEn => 'English';
+
+  @override
+  String get postButton => 'POST';
+
+  @override
+  String get createPostPlaceholder => 'WHAT\'S ON YOUR MIND?';
+
+  @override
+  String createPostCharCount(String current, String max) {
+    return 'CHR_COUNT: $current/$max';
+  }
+
+  @override
+  String get createPost => 'New Post';
+
+  @override
+  String get uploadMedia => 'Add photo';
 }

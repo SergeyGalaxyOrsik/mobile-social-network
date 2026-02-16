@@ -277,6 +277,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'English'**
   String get languageEn;
+
+  /// No description provided for @postButton.
+  ///
+  /// In en, this message translates to:
+  /// **'POST'**
+  String get postButton;
+
+  /// No description provided for @createPostPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'WHAT\'S ON YOUR MIND?'**
+  String get createPostPlaceholder;
+
+  /// No description provided for @createPostCharCount.
+  ///
+  /// In en, this message translates to:
+  /// **'CHR_COUNT: {current}/{max}'**
+  String createPostCharCount(String current, String max);
+
+  /// No description provided for @createPost.
+  ///
+  /// In en, this message translates to:
+  /// **'New Post'**
+  String get createPost;
+
+  /// No description provided for @uploadMedia.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get uploadMedia;
 }
 
 class _AppLocalizationsDelegate

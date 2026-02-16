@@ -1,25 +1,23 @@
-/// Сущность заметки (доменный слой).
 class NoteEntity {
   final int? id;
-  final String title;
-  final String description;
+  final String note;
   final String date;
+  final String? image;
 
   const NoteEntity({
     this.id,
-    required this.title,
-    required this.description,
+    required this.note,
     required this.date,
+    this.image,
   });
 
   Map<String, dynamic> toMap() {
-    final map = <String, dynamic>{
-      'title': title,
-      'description': description,
-      'date': date,
-    };
+    final map = <String, dynamic>{'note': note, 'date': date};
     if (id != null) {
       map['id'] = id;
+    }
+    if (image != null) {
+      map['image'] = image;
     }
     return map;
   }
@@ -27,9 +25,9 @@ class NoteEntity {
   factory NoteEntity.fromMap(Map<String, dynamic> map) {
     return NoteEntity(
       id: map['id'],
-      title: map['title'],
-      description: map['description'],
+      note: map['note'],
       date: map['date'],
+      image: map['image'],
     );
   }
 }

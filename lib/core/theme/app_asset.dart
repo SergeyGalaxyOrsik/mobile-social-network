@@ -64,24 +64,22 @@ abstract final class AppAsset {
     double? fontSize,
     FontWeight? fontWeight,
     Color? color,
-  }) =>
-      GoogleFonts.handjet(
-        fontSize: fontSize,
-        fontWeight: fontWeight,
-        color: color,
-      );
+  }) => GoogleFonts.handjet(
+    fontSize: fontSize,
+    fontWeight: fontWeight,
+    color: color,
+  );
 
   /// Основной текст с размером и опциональным цветом.
   static TextStyle body({
     double? fontSize,
     FontWeight? fontWeight,
     Color? color,
-  }) =>
-      GoogleFonts.roboto(
-        fontSize: fontSize,
-        fontWeight: fontWeight,
-        color: color,
-      );
+  }) => GoogleFonts.roboto(
+    fontSize: fontSize,
+    fontWeight: fontWeight,
+    color: color,
+  );
 
   // ─────────────────────────────────────────────────────────────────────────
   // Цвета (по макетам)
@@ -154,29 +152,30 @@ abstract final class AppAsset {
 
   /// Схема цветов светлой темы (по макету).
   static ColorScheme get colorSchemeLight => ColorScheme.light(
-        primary: accent,
-        onPrimary: textOnDark,
-        primaryContainer: accent,
-        onPrimaryContainer: textOnDark,
-        secondary: textLight,
-        onSecondary: cardBackgroundLight,
-        secondaryContainer: cardBackgroundLight,
-        onSecondaryContainer: textLight,
-        surface: backgroundLight,
-        onSurface: headlineLight,
-        surfaceContainerLowest: cardBackgroundLight,
-        surfaceContainerHighest: backgroundLight,
-        onSurfaceVariant: textSecondaryLight,
-        outline: outlineLight,
-        outlineVariant: dividerLight,
-        error: error,
-        onError: onError,
-        errorContainer: errorContainer,
-        onErrorContainer: onErrorContainer,
-      );
+    primary: accent,
+    onPrimary: textOnDark,
+    primaryContainer: accent,
+    onPrimaryContainer: textOnDark,
+    secondary: textLight,
+    onSecondary: cardBackgroundLight,
+    secondaryContainer: cardBackgroundLight,
+    onSecondaryContainer: textLight,
+    surface: backgroundLight,
+    onSurface: headlineLight,
+    surfaceContainerLowest: cardBackgroundLight,
+    surfaceContainerHighest: backgroundLight,
+    onSurfaceVariant: textSecondaryLight,
+    outline: outlineLight,
+    outlineVariant: dividerLight,
+    error: error,
+    onError: onError,
+    errorContainer: errorContainer,
+    onErrorContainer: onErrorContainer,
+  );
 
   /// Светлая тема приложения.
-  static ThemeData get themeLight => ThemeData(
+  static ThemeData get themeLight =>
+      ThemeData(
         colorScheme: colorSchemeLight,
         textTheme: textTheme.apply(
           bodyColor: colorSchemeLight.onSurface,
@@ -206,29 +205,30 @@ abstract final class AppAsset {
 
   /// Схема цветов тёмной темы (по макету).
   static ColorScheme get colorSchemeDark => ColorScheme.dark(
-        primary: accent,
-        onPrimary: textOnDark,
-        primaryContainer: accent,
-        onPrimaryContainer: textOnDark,
-        secondary: fillButtonDark,
-        onSecondary: textOnFillButton,
-        secondaryContainer: cardBackgroundDark,
-        onSecondaryContainer: textOnDark,
-        surface: backgroundDark,
-        onSurface: textOnDark,
-        surfaceContainerLowest: cardBackgroundDark,
-        surfaceContainerHighest: backgroundDark,
-        onSurfaceVariant: textSecondaryDark,
-        outline: outlineDark,
-        outlineVariant: outlineDark,
-        error: error,
-        onError: onError,
-        errorContainer: errorContainer,
-        onErrorContainer: onErrorContainer,
-      );
+    primary: accent,
+    onPrimary: textOnDark,
+    primaryContainer: accent,
+    onPrimaryContainer: textOnDark,
+    secondary: fillButtonDark,
+    onSecondary: textOnFillButton,
+    secondaryContainer: cardBackgroundDark,
+    onSecondaryContainer: textOnDark,
+    surface: backgroundDark,
+    onSurface: textOnDark,
+    surfaceContainerLowest: cardBackgroundDark,
+    surfaceContainerHighest: backgroundDark,
+    onSurfaceVariant: textSecondaryDark,
+    outline: outlineDark,
+    outlineVariant: outlineDark,
+    error: error,
+    onError: onError,
+    errorContainer: errorContainer,
+    onErrorContainer: onErrorContainer,
+  );
 
   /// Тёмная тема приложения.
-  static ThemeData get themeDark => ThemeData(
+  static ThemeData get themeDark =>
+      ThemeData(
         colorScheme: colorSchemeDark,
         textTheme: textTheme.apply(
           bodyColor: colorSchemeDark.onSurface,

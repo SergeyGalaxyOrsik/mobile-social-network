@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:mobile_social_network/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mobile_social_network/features/auth/presentation/bloc/auth_event.dart';
 import 'package:mobile_social_network/core/theme/locale_scope.dart';
 import 'package:mobile_social_network/core/theme/theme_mode_scope.dart';
 import 'package:mobile_social_network/l10n/app_localizations.dart';
 
-/// Экран настроек: выбор темы и языка.
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
@@ -15,19 +17,14 @@ class SettingsPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.settings),
-      ),
+      appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
             child: Text(
               l10n.theme,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ),
           RadioListTile<ThemeMode>(
@@ -52,10 +49,7 @@ class SettingsPage extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
             child: Text(
               l10n.language,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ),
           RadioListTile<Locale?>(
@@ -75,6 +69,14 @@ class SettingsPage extends StatelessWidget {
             value: const Locale('en'),
             groupValue: localeScope.locale,
             onChanged: (_) => localeScope.setLocale(const Locale('en')),
+          ),
+          const Divider(height: 32),
+          ListTile(
+            title: Text(l10n.logout),
+            leading: const Icon(Icons.logout),
+            onTap: () {
+              context.read<AuthBloc>().add(const AuthSignOutRequested());
+            },
           ),
         ],
       ),

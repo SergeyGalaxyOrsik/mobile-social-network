@@ -29,5 +29,16 @@
   "language": "Язык",
   "languageSystem": "Как в системе",
   "languageRu": "Русский",
-  "languageEn": "English"
+  "languageEn": "English",
+  "postButton": "ПОСТ",
+  "createPostPlaceholder": "О ЧЁМ ДУМАЕТЕ?",
+  "createPostCharCount": "СИМВ: {current}/{max}",
+  "@createPostCharCount": {
+    "placeholders": {
+      "current": {"type": "String"},
+      "max": {"type": "String"}
+    }
+  },
+  "createPost": "New Post",
+  "uploadMedia": "Добавить фото"
 }

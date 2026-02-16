@@ -12,9 +12,9 @@ class NoteRepositoryImpl implements NoteRepository {
   }
 
   @override
-  Future<void> createNote(NoteEntity note) async {
+  Future<int> createNote(NoteEntity note) async {
     final db = await DatabaseHelper.instance.database;
-    await db.insert('notes', note.toMap());
+    return await db.insert('notes', note.toMap());
   }
 
   @override

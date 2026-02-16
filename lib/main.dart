@@ -16,7 +16,11 @@ import 'package:mobile_social_network/features/auth/presentation/bloc/auth_bloc.
 import 'package:mobile_social_network/features/auth/presentation/bloc/auth_event.dart';
 import 'package:mobile_social_network/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mobile_social_network/features/auth/presentation/pages/login_page.dart';
+import 'package:mobile_social_network/features/feed/presentation/cubit/feed_cubit.dart';
 import 'package:mobile_social_network/features/main/presentation/pages/main_page.dart';
+import 'package:mobile_social_network/features/posts/data/repositories/note_repository_impl.dart';
+import 'package:mobile_social_network/features/posts/domain/repositories/note_repository.dart';
+import 'package:mobile_social_network/features/posts/presentation/pages/create_post_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -150,7 +154,29 @@ class _AuthGateState extends State<_AuthGate> {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         if (state is AuthAuthenticated) {
-          return MainPage(user: state.user);
+          final user = state.user;
+          return RepositoryProvider<NoteRepository>(
+            create: (_) => NoteRepositoryImpl(),
+            child: BlocProvider<FeedCubit>(
+              create: (context) =>
+                  FeedCubit(noteRepository: context.read<NoteRepository>()),
+              child: Navigator(
+                onGenerateInitialRoutes: (_, __) => [
+                  MaterialPageRoute<void>(
+                    builder: (_) => MainPage(user: user),
+                  ),
+                ],
+                onGenerateRoute: (settings) {
+                  if (settings.name == '/create') {
+                    return MaterialPageRoute<void>(
+                      builder: (_) => const CreatePostPage(),
+                    );
+                  }
+                  return null;
+                },
+              ),
+            ),
+          );
         }
         if (state is AuthUnauthenticated || state is AuthError) {
           return const LoginPage();

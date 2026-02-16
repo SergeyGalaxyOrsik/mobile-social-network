@@ -36,5 +36,16 @@
   "language": "Language",
   "languageSystem": "System",
   "languageRu": "Russian",
-  "languageEn": "English"
+  "languageEn": "English",
+  "postButton": "POST",
+  "createPostPlaceholder": "WHAT'S ON YOUR MIND?",
+  "createPostCharCount": "CHR_COUNT: {current}/{max}",
+  "@createPostCharCount": {
+    "placeholders": {
+      "current": {"type": "String"},
+      "max": {"type": "String"}
+    }
+  },
+  "createPost": "New Post",
+  "uploadMedia": "Add photo"
 }

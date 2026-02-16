@@ -99,4 +99,21 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get languageEn => 'English';
+
+  @override
+  String get postButton => 'ПОСТ';
+
+  @override
+  String get createPostPlaceholder => 'О ЧЁМ ДУМАЕТЕ?';
+
+  @override
+  String createPostCharCount(String current, String max) {
+    return 'СИМВ: $current/$max';
+  }
+
+  @override
+  String get createPost => 'New Post';
+
+  @override
+  String get uploadMedia => 'Добавить фото';
 }
