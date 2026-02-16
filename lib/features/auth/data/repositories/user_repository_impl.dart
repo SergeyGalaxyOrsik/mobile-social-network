@@ -13,14 +13,33 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<UserEntity?> getUserByEmail(String email) async {
+    final db = await DatabaseHelper.instance.database;
+    final maps = await db.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+    if (maps.isEmpty) return null;
+    return UserEntity.fromMap(maps.first);
+  }
+
+  @override
+  Future<bool> existsUserByEmail(String email) async {
+    final user = await getUserByEmail(email);
+    return user != null;
+  }
+
+  @override
   Future<void> createUser(UserEntity user) async {
     final db = await DatabaseHelper.instance.database;
     final userMap = user.toMap();
-
+    if (user.id.isEmpty) {
+      userMap.remove('id');
+    }
     if (user.password != null) {
       userMap['password'] = hashPassword(user.password!);
     }
-
     await db.insert('users', userMap);
   }
 
