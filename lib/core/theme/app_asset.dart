@@ -178,7 +178,10 @@ abstract final class AppAsset {
   /// Светлая тема приложения.
   static ThemeData get themeLight => ThemeData(
         colorScheme: colorSchemeLight,
-        textTheme: textTheme,
+        textTheme: textTheme.apply(
+          bodyColor: colorSchemeLight.onSurface,
+          displayColor: colorSchemeLight.onSurface,
+        ),
         useMaterial3: true,
       ).copyWith(
         filledButtonTheme: FilledButtonThemeData(
@@ -227,7 +230,10 @@ abstract final class AppAsset {
   /// Тёмная тема приложения.
   static ThemeData get themeDark => ThemeData(
         colorScheme: colorSchemeDark,
-        textTheme: textTheme,
+        textTheme: textTheme.apply(
+          bodyColor: colorSchemeDark.onSurface,
+          displayColor: colorSchemeDark.onSurface,
+        ),
         useMaterial3: true,
         brightness: Brightness.dark,
       ).copyWith(

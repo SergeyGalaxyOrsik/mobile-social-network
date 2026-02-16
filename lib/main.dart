@@ -5,7 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:mobile_social_network/core/constants/app_constants.dart';
 import 'package:mobile_social_network/core/theme/app_asset.dart';
+import 'package:mobile_social_network/core/theme/locale_scope.dart';
 import 'package:mobile_social_network/core/theme/theme_mode_scope.dart';
+import 'package:mobile_social_network/l10n/app_localizations.dart';
 import 'package:mobile_social_network/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:mobile_social_network/features/auth/data/repositories/user_repository_impl.dart';
 import 'package:mobile_social_network/features/auth/domain/repositories/auth_repository.dart';
@@ -48,11 +50,13 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late ThemeMode _themeMode;
+  Locale? _locale;
 
   @override
   void initState() {
     super.initState();
     _themeMode = _loadThemeMode(widget.preferences);
+    _locale = _loadLocale(widget.preferences);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final elapsed = DateTime.now().difference(
         MyApp.splashStartedAt ?? DateTime.now(),
@@ -75,6 +79,21 @@ class _MyAppState extends State<MyApp> {
     };
   }
 
+  static Locale? _loadLocale(SharedPreferences prefs) {
+    final code = prefs.getString(AppConstants.localeKey);
+    if (code == null || code.isEmpty) return null;
+    return Locale(code);
+  }
+
+  void _setLocale(Locale? locale) {
+    setState(() => _locale = locale);
+    if (locale != null) {
+      widget.preferences.setString(AppConstants.localeKey, locale.languageCode);
+    } else {
+      widget.preferences.remove(AppConstants.localeKey);
+    }
+  }
+
   void _setThemeMode(ThemeMode mode) {
     setState(() => _themeMode = mode);
     widget.preferences.setString(AppConstants.themeModeKey, switch (mode) {
@@ -91,12 +110,19 @@ class _MyAppState extends State<MyApp> {
       child: ThemeModeScope(
         themeMode: _themeMode,
         setThemeMode: _setThemeMode,
-        child: MaterialApp(
-          title: 'Социальная сеть',
-          theme: AppAsset.themeLight,
-          darkTheme: AppAsset.themeDark,
-          themeMode: _themeMode,
-          home: const _AuthGate(),
+        child: LocaleScope(
+          locale: _locale,
+          setLocale: _setLocale,
+          child: MaterialApp(
+            title: _locale?.languageCode == 'en' ? 'Social Network' : 'Социальная сеть',
+            theme: AppAsset.themeLight,
+            darkTheme: AppAsset.themeDark,
+            themeMode: _themeMode,
+            locale: _locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const _AuthGate(),
+          ),
         ),
       ),
     );

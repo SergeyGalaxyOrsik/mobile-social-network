@@ -1,0 +1,38 @@
+{
+  "@@locale": "en",
+  "appTitle": "Social Network",
+  "home": "Home",
+  "settings": "Settings",
+  "logout": "Log out",
+  "helloUser": "Hello, {name}!",
+  "@helloUser": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "login": "Sign in",
+  "email": "Email",
+  "enterEmail": "Enter email",
+  "password": "Password",
+  "enterPassword": "Enter password",
+  "signIn": "Sign in",
+  "noAccountRegister": "No account? Register",
+  "register": "Register",
+  "createAccount": "Create account",
+  "displayNameOptional": "Name (optional)",
+  "passwordMinLength": "Password must be at least 6 characters",
+  "confirmPassword": "Confirm password",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "registerButton": "Register",
+  "haveAccountSignIn": "Already have an account? Sign in",
+  "theme": "Theme",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System",
+  "language": "Language",
+  "languageSystem": "System",
+  "languageRu": "Russian",
+  "languageEn": "English"
+}

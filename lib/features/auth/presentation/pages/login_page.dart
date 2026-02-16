@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:mobile_social_network/l10n/app_localizations.dart';
+
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -38,6 +40,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -50,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Вход',
+                    l10n.login,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -61,14 +64,14 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.email_outlined),
+                    decoration: InputDecoration(
+                      labelText: l10n.email,
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.email_outlined),
                     ),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
-                        return 'Введите email';
+                        return l10n.enterEmail;
                       }
                       return null;
                     },
@@ -80,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (_) => _submit(),
                     decoration: InputDecoration(
-                      labelText: 'Пароль',
+                      labelText: l10n.password,
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
@@ -98,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     validator: (v) {
                       if (v == null || v.isEmpty) {
-                        return 'Введите пароль';
+                        return l10n.enterPassword;
                       }
                       return null;
                     },
@@ -125,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
                                 width: 22,
                                 child: CircularProgressIndicator(strokeWidth: 2),
                               )
-                            : const Text('Войти'),
+                            : Text(l10n.signIn),
                       );
                     },
                   ),
@@ -136,7 +139,7 @@ class _LoginPageState extends State<LoginPage> {
                         builder: (context) => const RegisterPage(),
                       ),
                     ),
-                    child: const Text('Нет аккаунта? Зарегистрироваться'),
+                    child: Text(l10n.noAccountRegister),
                   ),
                 ],
               ),

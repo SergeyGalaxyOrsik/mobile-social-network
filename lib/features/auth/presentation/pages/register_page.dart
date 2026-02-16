@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:mobile_social_network/l10n/app_localizations.dart';
+
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -45,9 +47,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Регистрация'),
+        title: Text(l10n.register),
       ),
       body: SafeArea(
         child: Center(
@@ -60,7 +63,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Создать аккаунт',
+                    l10n.createAccount,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -70,10 +73,10 @@ class _RegisterPageState extends State<RegisterPage> {
                   TextFormField(
                     controller: _displayNameController,
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(
-                      labelText: 'Имя (необязательно)',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.person_outline),
+                    decoration: InputDecoration(
+                      labelText: l10n.displayNameOptional,
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.person_outline),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -81,14 +84,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.email_outlined),
+                    decoration: InputDecoration(
+                      labelText: l10n.email,
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.email_outlined),
                     ),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
-                        return 'Введите email';
+                        return l10n.enterEmail;
                       }
                       return null;
                     },
@@ -99,7 +102,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     obscureText: _obscurePassword,
                     textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
-                      labelText: 'Пароль',
+                      labelText: l10n.password,
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
@@ -117,10 +120,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     validator: (v) {
                       if (v == null || v.isEmpty) {
-                        return 'Введите пароль';
+                        return l10n.enterPassword;
                       }
                       if (v.length < 6) {
-                        return 'Пароль не менее 6 символов';
+                        return l10n.passwordMinLength;
                       }
                       return null;
                     },
@@ -132,7 +135,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (_) => _submit(),
                     decoration: InputDecoration(
-                      labelText: 'Повторите пароль',
+                      labelText: l10n.confirmPassword,
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
@@ -150,7 +153,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     validator: (v) {
                       if (v == null || v != _passwordController.text) {
-                        return 'Пароли не совпадают';
+                        return l10n.passwordsDoNotMatch;
                       }
                       return null;
                     },
@@ -180,14 +183,14 @@ class _RegisterPageState extends State<RegisterPage> {
                                 width: 22,
                                 child: CircularProgressIndicator(strokeWidth: 2),
                               )
-                            : const Text('Зарегистрироваться'),
+                            : Text(l10n.registerButton),
                       );
                     },
                   ),
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Уже есть аккаунт? Войти'),
+                    child: Text(l10n.haveAccountSignIn),
                   ),
                 ],
               ),
