@@ -40,5 +40,12 @@
     }
   },
   "createPost": "New Post",
-  "uploadMedia": "Добавить фото"
+  "uploadMedia": "Добавить фото",
+  "editPost": "Редактировать",
+  "deletePost": "Удалить",
+  "editPostTitle": "Редактировать пост",
+  "saveChanges": "Сохранить",
+  "deletePostConfirmTitle": "Удалить пост?",
+  "deletePostConfirmMessage": "Действие нельзя отменить.",
+  "cancel": "Отмена"
 }

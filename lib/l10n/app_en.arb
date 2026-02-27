@@ -47,5 +47,12 @@
     }
   },
   "createPost": "New Post",
-  "uploadMedia": "Add photo"
+  "uploadMedia": "Add photo",
+  "editPost": "Edit",
+  "deletePost": "Delete",
+  "editPostTitle": "Edit post",
+  "saveChanges": "Save",
+  "deletePostConfirmTitle": "Delete post?",
+  "deletePostConfirmMessage": "This action cannot be undone.",
+  "cancel": "Cancel"
 }

@@ -116,4 +116,25 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get uploadMedia => 'Добавить фото';
+
+  @override
+  String get editPost => 'Редактировать';
+
+  @override
+  String get deletePost => 'Удалить';
+
+  @override
+  String get editPostTitle => 'Редактировать пост';
+
+  @override
+  String get saveChanges => 'Сохранить';
+
+  @override
+  String get deletePostConfirmTitle => 'Удалить пост?';
+
+  @override
+  String get deletePostConfirmMessage => 'Действие нельзя отменить.';
+
+  @override
+  String get cancel => 'Отмена';
 }

@@ -116,4 +116,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get uploadMedia => 'Add photo';
+
+  @override
+  String get editPost => 'Edit';
+
+  @override
+  String get deletePost => 'Delete';
+
+  @override
+  String get editPostTitle => 'Edit post';
+
+  @override
+  String get saveChanges => 'Save';
+
+  @override
+  String get deletePostConfirmTitle => 'Delete post?';
+
+  @override
+  String get deletePostConfirmMessage => 'This action cannot be undone.';
+
+  @override
+  String get cancel => 'Cancel';
 }

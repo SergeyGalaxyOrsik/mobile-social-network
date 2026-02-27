@@ -6,9 +6,14 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:mobile_social_network/features/auth/domain/entities/user_entity.dart';
+import 'package:mobile_social_network/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mobile_social_network/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mobile_social_network/features/feed/presentation/cubit/feed_cubit.dart';
 import 'package:mobile_social_network/features/feed/presentation/cubit/feed_state.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/note_entity.dart';
+import 'package:mobile_social_network/features/posts/domain/repositories/note_repository.dart';
+import 'package:mobile_social_network/features/posts/presentation/pages/edit_post_page.dart';
+import 'package:mobile_social_network/l10n/app_localizations.dart';
 
 class FeedPage extends StatefulWidget {
   const FeedPage({super.key});
@@ -47,10 +52,16 @@ class _FeedPageState extends State<FeedPage> {
                         final author = note.userId != null
                             ? state.authorByUserId[note.userId]
                             : null;
+                        final authState = context.read<AuthBloc>().state;
+                        final currentUserId = authState is AuthAuthenticated
+                            ? authState.user.id
+                            : null;
                         return _PostCard(
                           note: note,
                           author: author,
                           isPending: isPending,
+                          isOwnPost: currentUserId != null &&
+                              note.userId == currentUserId,
                           resolveImagePath: _resolveImagePath,
                         );
                       },
@@ -107,16 +118,19 @@ class _PostCard extends StatelessWidget {
     required this.note,
     this.author,
     required this.isPending,
+    required this.isOwnPost,
     required this.resolveImagePath,
   });
 
   final NoteEntity note;
   final UserEntity? author;
   final bool isPending;
+  final bool isOwnPost;
   final Future<String?> Function(String?) resolveImagePath;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final side = BorderSide(
       color: Theme.of(context).colorScheme.outline,
       width: 2,
@@ -245,6 +259,88 @@ class _PostCard extends StatelessWidget {
                 ],
               ],
             ),
+
+            if (isOwnPost)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  onSelected: (value) async {
+                    if (value == 'edit') {
+                      await Navigator.of(context).push<void>(
+                        MaterialPageRoute(
+                          builder: (context) => EditPostPage(note: note),
+                        ),
+                      );
+                      if (context.mounted) {
+                        context.read<FeedCubit>().loadNotes();
+                      }
+                    } else if (value == 'delete') {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: Text(l10n.deletePostConfirmTitle),
+                          content: Text(l10n.deletePostConfirmMessage),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(ctx).pop(false),
+                              child: Text(l10n.cancel),
+                            ),
+                            FilledButton(
+                              onPressed: () => Navigator.of(ctx).pop(true),
+                              child: Text(l10n.deletePost),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed == true &&
+                          note.id != null &&
+                          context.mounted) {
+                        await context
+                            .read<NoteRepository>()
+                            .deleteNote(note.id!);
+                        if (context.mounted) {
+                          context.read<FeedCubit>().loadNotes();
+                        }
+                      }
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.edit_outlined),
+                          const SizedBox(width: 8),
+                          Text(l10n.editPost),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.delete_outline,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.deletePost,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
             if (isPending)
               Positioned.fill(

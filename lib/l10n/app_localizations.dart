@@ -307,6 +307,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add photo'**
   String get uploadMedia;
+
+  /// No description provided for @editPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editPost;
+
+  /// No description provided for @deletePost.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deletePost;
+
+  /// No description provided for @editPostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit post'**
+  String get editPostTitle;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveChanges;
+
+  /// No description provided for @deletePostConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete post?'**
+  String get deletePostConfirmTitle;
+
+  /// No description provided for @deletePostConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone.'**
+  String get deletePostConfirmMessage;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
 }
 
 class _AppLocalizationsDelegate
