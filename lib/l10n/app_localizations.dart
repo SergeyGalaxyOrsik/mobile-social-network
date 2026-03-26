@@ -200,10 +200,16 @@ abstract class AppLocalizations {
   /// **'Enter nickname'**
   String get enterName;
 
+  /// No description provided for @usernameMinLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname must be at least 2 characters'**
+  String get usernameMinLength;
+
   /// No description provided for @passwordMinLength.
   ///
   /// In en, this message translates to:
-  /// **'Password must be at least 6 characters'**
+  /// **'Password must be at least 8 characters'**
   String get passwordMinLength;
 
   /// No description provided for @confirmPassword.
@@ -349,6 +355,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancel;
+
+  /// No description provided for @noInternetConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection'**
+  String get noInternetConnection;
+
+  /// No description provided for @commentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get commentsTitle;
+
+  /// No description provided for @sendComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get sendComment;
+
+  /// No description provided for @commentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a comment…'**
+  String get commentHint;
+
+  /// No description provided for @commentUserShort.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get commentUserShort;
+
+  /// No description provided for @likeTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Like'**
+  String get likeTooltip;
+
+  /// No description provided for @commentsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get commentsTooltip;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @noCommentsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet.'**
+  String get noCommentsYet;
 }
 
 class _AppLocalizationsDelegate

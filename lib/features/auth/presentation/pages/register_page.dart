@@ -20,7 +20,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _displayNameController = TextEditingController();
+  final _usernameController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
 
@@ -29,7 +29,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _displayNameController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
@@ -39,7 +39,7 @@ class _RegisterPageState extends State<RegisterPage> {
       AuthSignUpRequested(
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        displayName: _displayNameController.text.trim(),
+        username: _usernameController.text.trim(),
       ),
     );
   }
@@ -68,12 +68,13 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(height: 32),
                   InputAuthWidget(
-                    controller: _displayNameController,
+                    controller: _usernameController,
                     labelText: l10n.displayName,
                     prefixIcon: const Icon(Icons.person_outline),
                     validator: (v) {
                       final t = v?.trim() ?? '';
                       if (t.isEmpty) return l10n.enterName;
+                      if (t.length < 2) return l10n.usernameMinLength;
                       return null;
                     },
                   ),
@@ -98,7 +99,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       if (v == null || v.isEmpty) {
                         return l10n.enterPassword;
                       }
-                      if (v.length < 6) {
+                      if (v.length < 8) {
                         return l10n.passwordMinLength;
                       }
                       return null;

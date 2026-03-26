@@ -62,7 +62,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get enterName => 'Введите никнейм';
 
   @override
-  String get passwordMinLength => 'Пароль не менее 6 символов';
+  String get usernameMinLength => 'Никнейм не менее 2 символов';
+
+  @override
+  String get passwordMinLength => 'Пароль не менее 8 символов';
 
   @override
   String get confirmPassword => 'Повторите пароль';
@@ -137,4 +140,31 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get cancel => 'Отмена';
+
+  @override
+  String get noInternetConnection => 'Нет подключения к интернету';
+
+  @override
+  String get commentsTitle => 'Комментарии';
+
+  @override
+  String get sendComment => 'Отправить';
+
+  @override
+  String get commentHint => 'Написать комментарий…';
+
+  @override
+  String get commentUserShort => 'Пользователь';
+
+  @override
+  String get likeTooltip => 'Нравится';
+
+  @override
+  String get commentsTooltip => 'Комментарии';
+
+  @override
+  String get retry => 'Повторить';
+
+  @override
+  String get noCommentsYet => 'Пока нет комментариев.';
 }

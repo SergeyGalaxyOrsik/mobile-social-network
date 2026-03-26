@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:mobile_social_network/features/feed/presentation/cubit/feed_cubit.dart';
-import 'package:mobile_social_network/features/posts/domain/entities/note_entity.dart';
-import 'package:mobile_social_network/features/posts/domain/repositories/note_repository.dart';
+import 'package:mobile_social_network/features/posts/domain/entities/post_entity.dart';
+import 'package:mobile_social_network/features/posts/domain/repositories/post_repository.dart';
 import 'package:mobile_social_network/l10n/app_localizations.dart';
 
 import '../widgets/create_post_input_widget.dart';
@@ -11,9 +11,9 @@ import '../widgets/create_post_input_widget.dart';
 const int _kMaxPostLength = 280;
 
 class EditPostPage extends StatefulWidget {
-  const EditPostPage({super.key, required this.note});
+  const EditPostPage({super.key, required this.post});
 
-  final NoteEntity note;
+  final PostEntity post;
 
   @override
   State<EditPostPage> createState() => _EditPostPageState();
@@ -25,7 +25,7 @@ class _EditPostPageState extends State<EditPostPage> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.note.note);
+    _controller = TextEditingController(text: widget.post.content);
   }
 
   @override
@@ -38,21 +38,28 @@ class _EditPostPageState extends State<EditPostPage> {
     final text = _controller.text.trim();
     if (text.isEmpty || text.length > _kMaxPostLength) return;
 
-    final note = widget.note;
-    if (note.id == null) return;
+    final post = widget.post;
+    if (post.localId == null) return;
 
-    final updated = NoteEntity(
-      id: note.id,
-      userId: note.userId,
-      note: text,
-      date: note.date,
-      image: note.image,
+    final updated = PostEntity(
+      localId: post.localId,
+      postId: post.postId,
+      userId: post.userId,
+      content: text,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+      visibility: post.visibility,
+      postCode: post.postCode,
+      image: post.image,
+      media: post.media,
+      likesCount: post.likesCount,
+      commentsCount: post.commentsCount,
     );
 
-    final noteRepository = context.read<NoteRepository>();
+    final postRepository = context.read<PostRepository>();
     final feedCubit = context.read<FeedCubit>();
 
-    await noteRepository.updateNote(updated);
+    await postRepository.updatePost(updated);
     await feedCubit.loadNotes();
 
     if (!mounted) return;

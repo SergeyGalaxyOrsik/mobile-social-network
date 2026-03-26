@@ -1,7 +1,13 @@
-/// Ядро приложения: ошибки, use case, константы, БД, тема.
 library;
 
+export 'api/api_error_body.dart';
+export 'config/app_config.dart';
+export 'config/current_app_config.dart';
+export 'config/dev_config.dart';
+export 'config/prod_config.dart';
 export 'constants/app_constants.dart';
+export 'network/api_exception.dart';
+export 'network/app_dio.dart';
 export 'database/database_helper.dart';
 export 'errors/failures.dart';
 export 'theme/app_asset.dart';

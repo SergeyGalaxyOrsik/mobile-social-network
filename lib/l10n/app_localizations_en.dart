@@ -62,7 +62,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterName => 'Enter nickname';
 
   @override
-  String get passwordMinLength => 'Password must be at least 6 characters';
+  String get usernameMinLength => 'Nickname must be at least 2 characters';
+
+  @override
+  String get passwordMinLength => 'Password must be at least 8 characters';
 
   @override
   String get confirmPassword => 'Confirm password';
@@ -137,4 +140,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancel => 'Cancel';
+
+  @override
+  String get noInternetConnection => 'No internet connection';
+
+  @override
+  String get commentsTitle => 'Comments';
+
+  @override
+  String get sendComment => 'Send';
+
+  @override
+  String get commentHint => 'Write a comment…';
+
+  @override
+  String get commentUserShort => 'User';
+
+  @override
+  String get likeTooltip => 'Like';
+
+  @override
+  String get commentsTooltip => 'Comments';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get noCommentsYet => 'No comments yet.';
 }

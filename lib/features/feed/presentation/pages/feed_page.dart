@@ -6,12 +6,15 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:mobile_social_network/features/auth/domain/entities/user_entity.dart';
+import 'package:mobile_social_network/core/utils/user_avatar.dart';
 import 'package:mobile_social_network/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mobile_social_network/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mobile_social_network/features/feed/presentation/cubit/feed_cubit.dart';
 import 'package:mobile_social_network/features/feed/presentation/cubit/feed_state.dart';
-import 'package:mobile_social_network/features/posts/domain/entities/note_entity.dart';
-import 'package:mobile_social_network/features/posts/domain/repositories/note_repository.dart';
+import 'package:mobile_social_network/features/feed/presentation/widgets/post_comments_sheet.dart';
+import 'package:mobile_social_network/features/posts/domain/entities/post_entity.dart';
+import 'package:mobile_social_network/features/posts/domain/entities/post_media_item.dart';
+import 'package:mobile_social_network/features/posts/domain/repositories/post_repository.dart';
 import 'package:mobile_social_network/features/posts/presentation/pages/edit_post_page.dart';
 import 'package:mobile_social_network/l10n/app_localizations.dart';
 
@@ -26,52 +29,105 @@ class _FeedPageState extends State<FeedPage> {
   @override
   void initState() {
     super.initState();
-    context.read<FeedCubit>().loadNotes();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final authState = context.read<AuthBloc>().state;
+      final user = authState is AuthAuthenticated ? authState.user : null;
+      context.read<FeedCubit>().loadNotes(currentUser: user);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<FeedCubit, FeedState>(
-      builder: (context, state) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (state.pendingIds.isNotEmpty)
-              _PublishingBar(count: state.pendingIds.length),
-            Expanded(
-              child: state.notes.isEmpty && state.pendingIds.isEmpty
-                  ? const Center(child: Text('No posts yet'))
-                  : ListView.builder(
-                      padding: EdgeInsets.zero,
-                      itemCount: state.notes.length,
-                      itemBuilder: (context, index) {
-                        final note = state.notes[index];
-                        final isPending =
-                            note.id != null &&
-                            state.pendingIds.contains(note.id);
-                        final author = note.userId != null
-                            ? state.authorByUserId[note.userId]
-                            : null;
-                        final authState = context.read<AuthBloc>().state;
-                        final currentUserId = authState is AuthAuthenticated
-                            ? authState.user.id
-                            : null;
-                        return _PostCard(
-                          note: note,
-                          author: author,
-                          isPending: isPending,
-                          isOwnPost: currentUserId != null &&
-                              note.userId == currentUserId,
-                          resolveImagePath: _resolveImagePath,
-                        );
-                      },
-                    ),
-            ),
-          ],
-        );
+    return BlocListener<FeedCubit, FeedState>(
+      listenWhen: (prev, curr) =>
+          curr.lastPublishError != null &&
+          curr.lastPublishError != prev.lastPublishError,
+      listener: (context, state) {
+        final msg = state.lastPublishError;
+        if (msg != null && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+          context.read<FeedCubit>().clearPublishError();
+        }
       },
+      child: BlocListener<FeedCubit, FeedState>(
+        listenWhen: (prev, curr) =>
+            curr.lastEngagementError != null &&
+            curr.lastEngagementError != prev.lastEngagementError,
+        listener: (context, state) {
+          final msg = state.lastEngagementError;
+          if (msg != null && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+            context.read<FeedCubit>().clearEngagementError();
+          }
+        },
+        child: BlocBuilder<FeedCubit, FeedState>(
+          builder: (context, state) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (state.publishingTasks.isNotEmpty)
+                  _PublishingBar(
+                    taskCount: state.publishingTasks.length,
+                    progress: state.aggregatePublishProgress,
+                  ),
+                Expanded(
+                  child: state.posts.isEmpty && state.publishingTasks.isEmpty
+                      ? const Center(child: Text('No posts yet'))
+                      : ListView.builder(
+                          padding: EdgeInsets.zero,
+                          itemCount: state.posts.length,
+                          itemBuilder: (context, index) {
+                            final post = state.posts[index];
+                            final author = post.userId != null
+                                ? state.authorByUserId[post.userId]
+                                : null;
+                            final authState = context.read<AuthBloc>().state;
+                            final currentUserId = authState is AuthAuthenticated
+                                ? authState.user.id
+                                : null;
+                            final postId = post.postId;
+                            return _PostCard(
+                              post: post,
+                              author: author,
+                              isOwnPost: currentUserId != null &&
+                                  post.userId == currentUserId,
+                              resolveImagePath: _resolveImagePath,
+                              postLiked: postId != null
+                                  ? (state.postLikedByMe[postId] ?? false)
+                                  : false,
+                              onToggleLike: postId != null
+                                  ? () => context
+                                      .read<FeedCubit>()
+                                      .togglePostLike(postId)
+                                  : null,
+                              onOpenComments: postId != null
+                                  ? () => openPostCommentsSheet(context, post)
+                                  : null,
+                            );
+                          },
+                        ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
+}
+
+void openPostCommentsSheet(BuildContext context, PostEntity post) {
+  final height = MediaQuery.sizeOf(context).height * 0.65;
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: false,
+    builder: (ctx) => SizedBox(
+      height: height,
+      child: PostCommentsSheet(post: post),
+    ),
+  );
 }
 
 Future<String?> _resolveImagePath(String? relativePath) async {
@@ -80,10 +136,171 @@ Future<String?> _resolveImagePath(String? relativePath) async {
   return path.join(dir.path, relativePath);
 }
 
-class _PublishingBar extends StatelessWidget {
-  const _PublishingBar({required this.count});
+class _PostMediaBlock extends StatelessWidget {
+  const _PostMediaBlock({
+    required this.media,
+    required this.resolveImagePath,
+  });
 
-  final int count;
+  final PostMediaItem media;
+  final Future<String?> Function(String?) resolveImagePath;
+
+  @override
+  Widget build(BuildContext context) {
+    if (media.type.startsWith('image/')) {
+      final rel = media.localRelativePath;
+      if (rel != null && rel.isNotEmpty) {
+        return FutureBuilder<String?>(
+          future: resolveImagePath(rel),
+          builder: (context, snapshot) {
+            if (snapshot.hasData && snapshot.data != null) {
+              final file = File(snapshot.data!);
+              if (file.existsSync()) {
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => _FullScreenPhotoPage(
+                          imagePath: snapshot.data!,
+                        ),
+                      ),
+                    );
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(
+                      file,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      height: 300,
+                      errorBuilder: (_, __, ___) =>
+                          _networkImageTile(context, media.url),
+                    ),
+                  ),
+                );
+              }
+            }
+            return _networkImageTile(context, media.url);
+          },
+        );
+      }
+      return _networkImageTile(context, media.url);
+    }
+    if (media.type.startsWith('video/')) {
+      return Container(
+        height: 160,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Theme.of(context).colorScheme.outline),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.play_circle_outline,
+              size: 48,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 12),
+            Text('Video', style: Theme.of(context).textTheme.titleMedium),
+          ],
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+}
+
+Widget _networkImageTile(BuildContext context, String url) {
+  return GestureDetector(
+    onTap: () {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (context) => _FullScreenNetworkPhotoPage(url: url),
+        ),
+      );
+    },
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(
+        url,
+        fit: BoxFit.contain,
+        width: double.infinity,
+        height: 300,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return SizedBox(
+            height: 200,
+            child: Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+              ),
+            ),
+          );
+        },
+        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+      ),
+    ),
+  );
+}
+
+class _FullScreenNetworkPhotoPage extends StatelessWidget {
+  const _FullScreenNetworkPhotoPage({required this.url});
+
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4,
+              child: Image.network(
+                url,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Center(
+                  child: Text(
+                    'Failed to load image',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PublishingBar extends StatelessWidget {
+  const _PublishingBar({
+    required this.taskCount,
+    required this.progress,
+  });
+
+  final int taskCount;
+  final double progress;
 
   @override
   Widget build(BuildContext context) {
@@ -92,17 +309,23 @@ class _PublishingBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  minHeight: 4,
+                  value: progress.clamp(0.0, 1.0),
+                ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(height: 8),
               Text(
-                count == 1 ? 'Publishing…' : 'Publishing $count…',
+                taskCount <= 1
+                    ? 'Publishing…'
+                    : 'Publishing ($taskCount)…',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],
@@ -115,18 +338,22 @@ class _PublishingBar extends StatelessWidget {
 
 class _PostCard extends StatelessWidget {
   const _PostCard({
-    required this.note,
+    required this.post,
     this.author,
-    required this.isPending,
     required this.isOwnPost,
     required this.resolveImagePath,
+    required this.postLiked,
+    this.onToggleLike,
+    this.onOpenComments,
   });
 
-  final NoteEntity note;
+  final PostEntity post;
   final UserEntity? author;
-  final bool isPending;
   final bool isOwnPost;
   final Future<String?> Function(String?) resolveImagePath;
+  final bool postLiked;
+  final VoidCallback? onToggleLike;
+  final VoidCallback? onOpenComments;
 
   @override
   Widget build(BuildContext context) {
@@ -158,33 +385,10 @@ class _PostCard extends StatelessWidget {
                           child: SizedBox(
                             width: 40,
                             height: 40,
-                            child: author!.avatarUrl != null
-                                ? FutureBuilder<String?>(
-                                    future: resolveImagePath(author!.avatarUrl),
-                                    builder: (context, snapshot) {
-                                      if (!snapshot.hasData ||
-                                          snapshot.data == null) {
-                                        return const Icon(
-                                          Icons.person,
-                                          size: 40,
-                                        );
-                                      }
-                                      final file = File(snapshot.data!);
-                                      if (!file.existsSync()) {
-                                        return const Icon(
-                                          Icons.person,
-                                          size: 40,
-                                        );
-                                      }
-                                      return Image.file(
-                                        file,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            const Icon(Icons.person, size: 40),
-                                      );
-                                    },
-                                  )
-                                : const Icon(Icons.person, size: 30),
+                            child: buildUserAvatarImage(
+                              avatarUrl: author!.avatarUrl,
+                              size: 40,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -192,8 +396,8 @@ class _PostCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              author!.displayName?.isNotEmpty == true
-                                  ? author!.displayName!
+                              author!.username?.isNotEmpty == true
+                                  ? author!.username!
                                   : author!.email,
                               style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(
@@ -204,7 +408,7 @@ class _PostCard extends StatelessWidget {
                                   ),
                             ),
                             Text(
-                              note.date,
+                              post.createdAt,
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(
                                     color: Theme.of(
@@ -217,13 +421,23 @@ class _PostCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                Text(note.note, style: Theme.of(context).textTheme.bodyLarge),
+                Text(post.content, style: Theme.of(context).textTheme.bodyLarge),
 
-                // const SizedBox(height: 8),
-                if (note.image != null) ...[
+                if (post.media != null && post.media!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  ...post.media!.map(
+                    (m) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _PostMediaBlock(
+                        media: m,
+                        resolveImagePath: resolveImagePath,
+                      ),
+                    ),
+                  ),
+                ] else if (post.image != null) ...[
                   const SizedBox(height: 8),
                   FutureBuilder<String?>(
-                    future: resolveImagePath(note.image),
+                    future: resolveImagePath(post.image),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData || snapshot.data == null) {
                         return const SizedBox.shrink();
@@ -257,6 +471,40 @@ class _PostCard extends StatelessWidget {
                     },
                   ),
                 ],
+                if (post.postId != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      IconButton(
+                        tooltip: l10n.likeTooltip,
+                        onPressed: onToggleLike,
+                        icon: Icon(
+                          postLiked ? Icons.favorite : Icons.favorite_border,
+                          color: postLiked
+                              ? Theme.of(context).colorScheme.error
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      Text(
+                        '${post.likesCount}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        tooltip: l10n.commentsTooltip,
+                        onPressed: onOpenComments,
+                        icon: Icon(
+                          Icons.chat_bubble_outline,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      Text(
+                        '${post.commentsCount}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
 
@@ -273,7 +521,7 @@ class _PostCard extends StatelessWidget {
                     if (value == 'edit') {
                       await Navigator.of(context).push<void>(
                         MaterialPageRoute(
-                          builder: (context) => EditPostPage(note: note),
+                          builder: (context) => EditPostPage(post: post),
                         ),
                       );
                       if (context.mounted) {
@@ -298,11 +546,11 @@ class _PostCard extends StatelessWidget {
                         ),
                       );
                       if (confirmed == true &&
-                          note.id != null &&
+                          post.localId != null &&
                           context.mounted) {
                         await context
-                            .read<NoteRepository>()
-                            .deleteNote(note.id!);
+                            .read<PostRepository>()
+                            .deletePost(post.localId!);
                         if (context.mounted) {
                           context.read<FeedCubit>().loadNotes();
                         }
@@ -342,27 +590,6 @@ class _PostCard extends StatelessWidget {
                 ),
               ),
 
-            if (isPending)
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.surface.withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 8),
-                        Text('Publishing…'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),

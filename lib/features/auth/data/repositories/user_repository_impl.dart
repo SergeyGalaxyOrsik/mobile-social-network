@@ -3,7 +3,6 @@ import 'package:mobile_social_network/core/utils/hash_password.dart';
 import 'package:mobile_social_network/features/auth/domain/entities/user_entity.dart';
 import 'package:mobile_social_network/features/auth/domain/repositories/user_repository.dart';
 
-/// Реализация репозитория пользователей (слой data).
 class UserRepositoryImpl implements UserRepository {
   @override
   Future<List<UserEntity>> getUsers() async {

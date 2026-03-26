@@ -17,7 +17,8 @@
   "displayNameOptional": "Имя (необязательно)",
   "displayName": "Никнейм",
   "enterName": "Введите никнейм",
-  "passwordMinLength": "Пароль не менее 6 символов",
+  "usernameMinLength": "Никнейм не менее 2 символов",
+  "passwordMinLength": "Пароль не менее 8 символов",
   "confirmPassword": "Повторите пароль",
   "passwordsDoNotMatch": "Пароли не совпадают",
   "registerButton": "Зарегистрироваться",
@@ -47,5 +48,14 @@
   "saveChanges": "Сохранить",
   "deletePostConfirmTitle": "Удалить пост?",
   "deletePostConfirmMessage": "Действие нельзя отменить.",
-  "cancel": "Отмена"
+  "cancel": "Отмена",
+  "noInternetConnection": "Нет подключения к интернету",
+  "commentsTitle": "Комментарии",
+  "sendComment": "Отправить",
+  "commentHint": "Написать комментарий…",
+  "commentUserShort": "Пользователь",
+  "likeTooltip": "Нравится",
+  "commentsTooltip": "Комментарии",
+  "retry": "Повторить",
+  "noCommentsYet": "Пока нет комментариев."
 }

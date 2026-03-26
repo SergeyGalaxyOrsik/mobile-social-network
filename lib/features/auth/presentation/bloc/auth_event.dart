@@ -7,12 +7,10 @@ abstract class AuthEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Проверить, авторизован ли пользователь (при старте приложения).
 class AuthCheckRequested extends AuthEvent {
   const AuthCheckRequested();
 }
 
-/// Вход по email и паролю.
 class AuthSignInRequested extends AuthEvent {
   const AuthSignInRequested({required this.email, required this.password});
 
@@ -23,23 +21,21 @@ class AuthSignInRequested extends AuthEvent {
   List<Object?> get props => [email, password];
 }
 
-/// Регистрация: email, пароль, опционально имя.
 class AuthSignUpRequested extends AuthEvent {
   const AuthSignUpRequested({
     required this.email,
     required this.password,
-    this.displayName,
+    this.username,
   });
 
   final String email;
   final String password;
-  final String? displayName;
+  final String? username;
 
   @override
-  List<Object?> get props => [email, password, displayName];
+  List<Object?> get props => [email, password, username];
 }
 
-/// Выход из аккаунта.
 class AuthSignOutRequested extends AuthEvent {
   const AuthSignOutRequested();
 }

@@ -16,7 +16,7 @@ class DatabaseHelper {
     return _database!;
   }
 
-  static const int _dbVersion = 4;
+  static const int _dbVersion = 7;
 
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
@@ -34,7 +34,21 @@ class DatabaseHelper {
     const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const textType = 'TEXT NOT NULL';
 
-    if (version >= 4) {
+    if (version >= 5) {
+      await db.execute('''
+        CREATE TABLE notes (
+          id $idType,
+          userId TEXT,
+          note $textType,
+          date $textType,
+          image TEXT,
+          post_id TEXT,
+          post_code TEXT,
+          updated_at TEXT,
+          visibility TEXT
+        )
+      ''');
+    } else if (version >= 4) {
       await db.execute('''
         CREATE TABLE notes (
           id $idType,
@@ -73,6 +87,23 @@ class DatabaseHelper {
         avatarUrl TEXT
       )
       ''');
+
+    if (version >= 6) {
+      await db.execute('''
+        CREATE TABLE feed_posts (
+          post_id TEXT PRIMARY KEY NOT NULL,
+          user_id TEXT,
+          content TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT,
+          visibility TEXT,
+          post_code TEXT,
+          position INTEGER NOT NULL,
+          media_json TEXT,
+          fetched_at TEXT NOT NULL
+        )
+      ''');
+    }
   }
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -101,6 +132,36 @@ class DatabaseHelper {
     }
     if (oldVersion < 4) {
       await db.execute('ALTER TABLE notes ADD COLUMN userId TEXT');
+    }
+    if (oldVersion < 5) {
+      await db.execute('ALTER TABLE notes ADD COLUMN post_id TEXT');
+      await db.execute('ALTER TABLE notes ADD COLUMN post_code TEXT');
+      await db.execute('ALTER TABLE notes ADD COLUMN updated_at TEXT');
+      await db.execute('ALTER TABLE notes ADD COLUMN visibility TEXT');
+    }
+    if (oldVersion < 6) {
+      await db.execute('''
+        CREATE TABLE feed_posts (
+          post_id TEXT PRIMARY KEY NOT NULL,
+          user_id TEXT,
+          content TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT,
+          visibility TEXT,
+          post_code TEXT,
+          position INTEGER NOT NULL,
+          media_json TEXT,
+          fetched_at TEXT NOT NULL
+        )
+      ''');
+    }
+    if (oldVersion < 7) {
+      await db.execute(
+        'ALTER TABLE feed_posts ADD COLUMN likes_count INTEGER NOT NULL DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE feed_posts ADD COLUMN comments_count INTEGER NOT NULL DEFAULT 0',
+      );
     }
   }
 

@@ -2,14 +2,15 @@
 class UserEntity {
   final String id;
   final String email;
-  final String? displayName;
+  /// Публичное имя (OpenAPI: username). В БД колонка по-прежнему `displayName`.
+  final String? username;
   final String? password;
   final String? avatarUrl;
 
   const UserEntity({
     required this.id,
     required this.email,
-    this.displayName,
+    this.username,
     this.password,
     this.avatarUrl,
   });
@@ -17,7 +18,7 @@ class UserEntity {
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{
       'email': email,
-      'displayName': displayName,
+      'displayName': username,
       'avatarUrl': avatarUrl,
     };
     if (password != null) {
@@ -27,12 +28,11 @@ class UserEntity {
     return map;
   }
 
-  /// Преобразование Map в UserEntity (пароль не возвращаем из БД).
   factory UserEntity.fromMap(Map<String, dynamic> map) {
     return UserEntity(
       id: map['id']?.toString() ?? '',
       email: map['email'],
-      displayName: map['displayName'],
+      username: map['username'] ?? map['displayName'],
       avatarUrl: map['avatarUrl'],
     );
   }

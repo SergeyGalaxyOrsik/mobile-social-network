@@ -49,7 +49,7 @@ class _MainPageState extends State<MainPage> {
                   padding: const EdgeInsets.only(left: 24, right: 24, top: 16),
                   child: Text(
                     l10n.helloUser(
-                      widget.user.displayName ?? widget.user.email,
+                      widget.user.username ?? widget.user.email,
                     ),
                     style: Theme.of(context).textTheme.displayMedium,
                     textAlign: TextAlign.left,

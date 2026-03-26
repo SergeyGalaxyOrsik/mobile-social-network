@@ -24,7 +24,8 @@
   "displayNameOptional": "Name (optional)",
   "displayName": "Nickname",
   "enterName": "Enter nickname",
-  "passwordMinLength": "Password must be at least 6 characters",
+  "usernameMinLength": "Nickname must be at least 2 characters",
+  "passwordMinLength": "Password must be at least 8 characters",
   "confirmPassword": "Confirm password",
   "passwordsDoNotMatch": "Passwords do not match",
   "registerButton": "Register",
@@ -54,5 +55,14 @@
   "saveChanges": "Save",
   "deletePostConfirmTitle": "Delete post?",
   "deletePostConfirmMessage": "This action cannot be undone.",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "noInternetConnection": "No internet connection",
+  "commentsTitle": "Comments",
+  "sendComment": "Send",
+  "commentHint": "Write a comment…",
+  "commentUserShort": "User",
+  "likeTooltip": "Like",
+  "commentsTooltip": "Comments",
+  "retry": "Retry",
+  "noCommentsYet": "No comments yet."
 }

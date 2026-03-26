@@ -1,6 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+
+import 'package:mobile_social_network/core/utils/user_avatar.dart';
 import 'package:mobile_social_network/features/auth/domain/entities/user_entity.dart';
 
 class OwnProfileWidget extends StatelessWidget {
@@ -11,7 +11,6 @@ class OwnProfileWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final avatarUrl = user.avatarUrl;
-    final hasAvatar = avatarUrl != null && File(avatarUrl).existsSync();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -25,14 +24,7 @@ class OwnProfileWidget extends StatelessWidget {
             child: SizedBox(
               width: 52,
               height: 52,
-              child: hasAvatar
-                  ? Image.file(
-                      File(avatarUrl),
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.person, size: 52),
-                    )
-                  : const Icon(Icons.person, size: 52),
+              child: buildUserAvatarImage(avatarUrl: avatarUrl, size: 52),
             ),
           ),
           const SizedBox(width: 16),
@@ -40,7 +32,7 @@ class OwnProfileWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                user.displayName ?? '',
+                user.username ?? '',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
             ],
