@@ -1,3 +1,4 @@
+import 'package:mobile_social_network/features/posts/domain/entities/post_author.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/post_media_item.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/post_visibility.dart';
 
@@ -14,6 +15,7 @@ class PostEntity {
     this.image,
     this.media,
     this.mediaIds,
+    this.author,
     this.likesCount = 0,
     this.commentsCount = 0,
   });
@@ -29,6 +31,7 @@ class PostEntity {
   final String? image;
   final List<PostMediaItem>? media;
   final List<String>? mediaIds;
+  final PostAuthor? author;
   final int likesCount;
   final int commentsCount;
 
@@ -44,6 +47,7 @@ class PostEntity {
     String? image,
     List<PostMediaItem>? media,
     List<String>? mediaIds,
+    PostAuthor? author,
     int? likesCount,
     int? commentsCount,
   }) {
@@ -59,6 +63,7 @@ class PostEntity {
       image: image ?? this.image,
       media: media ?? this.media,
       mediaIds: mediaIds ?? this.mediaIds,
+      author: author ?? this.author,
       likesCount: likesCount ?? this.likesCount,
       commentsCount: commentsCount ?? this.commentsCount,
     );

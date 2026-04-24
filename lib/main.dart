@@ -1,7 +1,14 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:mobile_social_network/core/navigation/app_navigator_keys.dart';
+import 'package:mobile_social_network/core/notifications/fcm_setup.dart';
+import 'package:mobile_social_network/core/notifications/push_lifecycle_host.dart';
 import 'package:mobile_social_network/core/network/internet_connectivity_cubit.dart';
 import 'package:mobile_social_network/core/network/internet_connectivity_state.dart';
 import 'package:mobile_social_network/core/widgets/connectivity_banner.dart';
@@ -9,9 +16,19 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:mobile_social_network/core/config/current_app_config.dart';
+import 'package:mobile_social_network/core/config/media_url_rewrite_config.dart';
 import 'package:mobile_social_network/core/constants/app_constants.dart';
 import 'package:mobile_social_network/core/network/app_dio.dart';
+import 'package:mobile_social_network/core/network/chat_socket_uri.dart';
 import 'package:mobile_social_network/core/network/s3_presigned_dio.dart';
+import 'package:mobile_social_network/features/chat/data/datasources/chat_remote_datasource.dart';
+import 'package:mobile_social_network/features/chat/data/datasources/chat_socket_client.dart';
+import 'package:mobile_social_network/features/chat/data/repositories/chat_repository_impl.dart';
+import 'package:mobile_social_network/features/chat/domain/repositories/chat_repository.dart';
+import 'package:mobile_social_network/features/chat/presentation/chat_navigation.dart';
+import 'package:mobile_social_network/features/chat/presentation/pages/chat_blocks_page.dart';
+import 'package:mobile_social_network/features/chat/presentation/pages/conversations_page.dart';
+import 'package:mobile_social_network/features/chat/presentation/pages/direct_chat_page.dart';
 import 'package:mobile_social_network/features/media/data/datasources/media_remote_datasource.dart';
 import 'package:mobile_social_network/features/media/data/media_upload_service.dart';
 import 'package:mobile_social_network/core/theme/app_asset.dart';
@@ -38,9 +55,18 @@ import 'package:mobile_social_network/features/posts/data/repositories/post_repo
 import 'package:mobile_social_network/features/posts/domain/repositories/post_engagement_repository.dart';
 import 'package:mobile_social_network/features/posts/domain/repositories/post_repository.dart';
 import 'package:mobile_social_network/features/posts/presentation/pages/create_post_page.dart';
+import 'package:mobile_social_network/features/social_users/data/datasources/social_users_remote_datasource.dart';
+import 'package:mobile_social_network/features/social_users/data/repositories/social_users_repository_impl.dart';
+import 'package:mobile_social_network/features/social_users/domain/repositories/social_users_repository.dart';
+import 'package:mobile_social_network/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  await setupFirebaseMessaging();
   FlutterNativeSplash.preserve(widgetsBinding: WidgetsBinding.instance);
   MyApp.splashStartedAt = DateTime.now();
 
@@ -68,9 +94,21 @@ void main() async {
   );
 
   final UserRepository userRepository = UserRepositoryImpl();
+
+  Future<void> revokePushTokenOnServer() async {
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token == null || token.isEmpty) {
+      return;
+    }
+    try {
+      await authRemote.deletePushToken(token);
+    } catch (_) {}
+  }
+
   final AuthRepository authRepository = AuthRepositoryRemoteImpl(
     remote: authRemote,
     preferences: preferences,
+    revokePushOnSignOut: revokePushTokenOnServer,
   );
   final postLocal = PostLocalRepositoryImpl();
   final feedCache = FeedCacheDataSource();
@@ -79,15 +117,34 @@ void main() async {
     local: postLocal,
     feedCache: feedCache,
   );
+  final socialUsersRemote = SocialUsersRemoteDataSource(dio);
+  final SocialUsersRepository socialUsersRepository =
+      SocialUsersRepositoryImpl(socialUsersRemote);
+  final chatRemote = ChatRemoteDataSource(dio);
+  final chatSocket = ChatSocketClient(
+    socketUri: resolveChatSocketUri(appConfig.apiBaseUrl),
+    accessToken: () => preferences.getString(AppConstants.accessTokenKey),
+  );
+  final ChatRepository chatRepository = ChatRepositoryImpl(
+    remote: chatRemote,
+    socket: chatSocket,
+  );
   final authBloc = AuthBloc(authRepository: authRepository);
+  final mediaUrlRewriteConfig = MediaUrlRewriteConfig(
+    appConfig.presignedUploadOrigin,
+  );
 
   runApp(MyApp(
     authBloc: authBloc,
+    authRemote: authRemote,
     preferences: preferences,
     userRepository: userRepository,
     postRepository: postRepository,
     postEngagementRepository: postEngagementRepository,
     mediaUploadService: mediaUploadService,
+    socialUsersRepository: socialUsersRepository,
+    chatRepository: chatRepository,
+    mediaUrlRewriteConfig: mediaUrlRewriteConfig,
   ));
 }
 
@@ -95,19 +152,27 @@ class MyApp extends StatefulWidget {
   const MyApp({
     super.key,
     required this.authBloc,
+    required this.authRemote,
     required this.preferences,
     required this.userRepository,
     required this.postRepository,
     required this.postEngagementRepository,
     required this.mediaUploadService,
+    required this.socialUsersRepository,
+    required this.chatRepository,
+    required this.mediaUrlRewriteConfig,
   });
 
   final AuthBloc authBloc;
+  final AuthRemoteDataSource authRemote;
   final SharedPreferences preferences;
   final UserRepository userRepository;
   final PostRepository postRepository;
   final PostEngagementRepository postEngagementRepository;
   final MediaUploadService mediaUploadService;
+  final SocialUsersRepository socialUsersRepository;
+  final ChatRepository chatRepository;
+  final MediaUrlRewriteConfig mediaUrlRewriteConfig;
 
   static DateTime? splashStartedAt;
 
@@ -174,53 +239,83 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthBloc>.value(
-      value: widget.authBloc,
-      child: BlocProvider<InternetConnectivityCubit>(
-        create: (_) => InternetConnectivityCubit(),
-        child: ThemeModeScope(
-          themeMode: _themeMode,
-          setThemeMode: _setThemeMode,
-          child: LocaleScope(
-            locale: _locale,
-            setLocale: _setLocale,
-            child: MaterialApp(
-              title: _locale?.languageCode == 'en' ? 'Social Network' : 'Социальная сеть',
-              theme: AppAsset.themeLight,
-              darkTheme: AppAsset.themeDark,
-              themeMode: _themeMode,
-              locale: _locale,
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
-              supportedLocales: AppLocalizations.supportedLocales,
-              builder: (context, child) {
-                return BlocBuilder<InternetConnectivityCubit, InternetConnectivityState>(
-                  buildWhen: (previous, current) =>
-                      previous.showOfflineBanner != current.showOfflineBanner,
-                  builder: (context, state) {
-                    return Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        child ?? const SizedBox.shrink(),
-                        if (state.showOfflineBanner)
-                          const Positioned(
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            child: ConnectivityBanner(),
-                          ),
-                      ],
+    return RepositoryProvider<MediaUrlRewriteConfig>.value(
+      value: widget.mediaUrlRewriteConfig,
+      child: BlocProvider<AuthBloc>.value(
+        value: widget.authBloc,
+        child: RepositoryProvider<ChatRepository>.value(
+          value: widget.chatRepository,
+          child: BlocListener<AuthBloc, AuthState>(
+            listenWhen: (previous, current) =>
+                previous is AuthAuthenticated != current is AuthAuthenticated,
+            listener: (context, state) {
+              final chat = context.read<ChatRepository>();
+              if (state is AuthAuthenticated) {
+                unawaited(chat.activateRealtime());
+              } else {
+                chat.deactivateRealtime();
+              }
+            },
+            child: BlocProvider<InternetConnectivityCubit>(
+              create: (_) => InternetConnectivityCubit(),
+              child: ThemeModeScope(
+                themeMode: _themeMode,
+                setThemeMode: _setThemeMode,
+                child: LocaleScope(
+                  locale: _locale,
+                  setLocale: _setLocale,
+                  child: MaterialApp(
+                  navigatorKey: appRootNavigatorKey,
+                  scaffoldMessengerKey: appRootMessengerKey,
+                  title: _locale?.languageCode == 'en'
+                      ? 'Social Network'
+                      : 'Социальная сеть',
+                  theme: AppAsset.themeLight,
+                  darkTheme: AppAsset.themeDark,
+                  themeMode: _themeMode,
+                  locale: _locale,
+                  localizationsDelegates:
+                      AppLocalizations.localizationsDelegates,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  builder: (context, child) {
+                    return PushLifecycleHost(
+                      authRemote: widget.authRemote,
+                      child: BlocBuilder<InternetConnectivityCubit,
+                          InternetConnectivityState>(
+                        buildWhen: (previous, current) =>
+                            previous.showOfflineBanner !=
+                            current.showOfflineBanner,
+                        builder: (context, state) {
+                          return Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              child ?? const SizedBox.shrink(),
+                              if (state.showOfflineBanner)
+                                const Positioned(
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  child: ConnectivityBanner(),
+                                ),
+                            ],
+                          );
+                        },
+                      ),
                     );
                   },
-                );
-              },
-              home: _AuthGate(
-                userRepository: widget.userRepository,
-                postRepository: widget.postRepository,
-                postEngagementRepository: widget.postEngagementRepository,
-                mediaUploadService: widget.mediaUploadService,
+                  home: _AuthGate(
+                    userRepository: widget.userRepository,
+                    postRepository: widget.postRepository,
+                    postEngagementRepository:
+                        widget.postEngagementRepository,
+                    mediaUploadService: widget.mediaUploadService,
+                    socialUsersRepository: widget.socialUsersRepository,
+                  ),
+                ),
               ),
             ),
           ),
+        ),
         ),
       ),
     );
@@ -235,12 +330,14 @@ class _AuthGate extends StatefulWidget {
     required this.postRepository,
     required this.postEngagementRepository,
     required this.mediaUploadService,
+    required this.socialUsersRepository,
   });
 
   final UserRepository userRepository;
   final PostRepository postRepository;
   final PostEngagementRepository postEngagementRepository;
   final MediaUploadService mediaUploadService;
+  final SocialUsersRepository socialUsersRepository;
 
   @override
   State<_AuthGate> createState() => _AuthGateState();
@@ -263,33 +360,59 @@ class _AuthGateState extends State<_AuthGate> {
             value: widget.userRepository,
             child: RepositoryProvider<PostRepository>.value(
               value: widget.postRepository,
-              child: RepositoryProvider<PostEngagementRepository>.value(
-                value: widget.postEngagementRepository,
-                child: BlocProvider<FeedCubit>(
-                  create: (context) => FeedCubit(
-                    postRepository: context.read<PostRepository>(),
-                    postEngagementRepository:
-                        context.read<PostEngagementRepository>(),
-                    mediaUploadService: widget.mediaUploadService,
+              child: RepositoryProvider<SocialUsersRepository>.value(
+                value: widget.socialUsersRepository,
+                child: RepositoryProvider<PostEngagementRepository>.value(
+                  value: widget.postEngagementRepository,
+                  child: RepositoryProvider<MediaUploadService>.value(
+                    value: widget.mediaUploadService,
+                    child: BlocProvider<FeedCubit>(
+                      create: (context) => FeedCubit(
+                        postRepository: context.read<PostRepository>(),
+                        postEngagementRepository:
+                            context.read<PostEngagementRepository>(),
+                        mediaUploadService: widget.mediaUploadService,
+                      ),
+                      child: Navigator(
+                        key: appShellNavigatorKey,
+                        onGenerateInitialRoutes: (_, __) => [
+                          MaterialPageRoute<void>(
+                            builder: (_) => MainPage(user: user),
+                          ),
+                        ],
+                        onGenerateRoute: (settings) {
+                          if (settings.name == '/create') {
+                            return MaterialPageRoute<void>(
+                              builder: (_) => const CreatePostPage(),
+                            );
+                          }
+                          if (settings.name == '/conversations') {
+                            return MaterialPageRoute<void>(
+                              builder: (_) => const ConversationsPage(),
+                            );
+                          }
+                          if (settings.name == '/chat') {
+                            final args = settings.arguments;
+                            if (args is! DirectChatRouteArgs) {
+                              return null;
+                            }
+                            return MaterialPageRoute<void>(
+                              builder: (_) => DirectChatPage(args: args),
+                            );
+                          }
+                          if (settings.name == '/chat/blocks') {
+                            return MaterialPageRoute<void>(
+                              builder: (_) => const ChatBlocksPage(),
+                            );
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
                   ),
-              child: Navigator(
-                onGenerateInitialRoutes: (_, __) => [
-                  MaterialPageRoute<void>(
-                    builder: (_) => MainPage(user: user),
-                  ),
-                ],
-                onGenerateRoute: (settings) {
-                  if (settings.name == '/create') {
-                    return MaterialPageRoute<void>(
-                      builder: (_) => const CreatePostPage(),
-                    );
-                  }
-                  return null;
-                },
                 ),
               ),
             ),
-          ),
           );
         }
         if (state is AuthUnauthenticated || state is AuthError) {

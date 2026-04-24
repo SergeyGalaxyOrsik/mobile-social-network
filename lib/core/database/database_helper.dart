@@ -16,7 +16,7 @@ class DatabaseHelper {
     return _database!;
   }
 
-  static const int _dbVersion = 7;
+  static const int _dbVersion = 8;
 
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
@@ -100,7 +100,10 @@ class DatabaseHelper {
           post_code TEXT,
           position INTEGER NOT NULL,
           media_json TEXT,
-          fetched_at TEXT NOT NULL
+          fetched_at TEXT NOT NULL,
+          likes_count INTEGER NOT NULL DEFAULT 0,
+          comments_count INTEGER NOT NULL DEFAULT 0,
+          author_json TEXT
         )
       ''');
     }
@@ -161,6 +164,11 @@ class DatabaseHelper {
       );
       await db.execute(
         'ALTER TABLE feed_posts ADD COLUMN comments_count INTEGER NOT NULL DEFAULT 0',
+      );
+    }
+    if (oldVersion < 8) {
+      await db.execute(
+        'ALTER TABLE feed_posts ADD COLUMN author_json TEXT',
       );
     }
   }

@@ -1,5 +1,7 @@
 import 'package:mobile_social_network/core/database/database_helper.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/post_entity.dart';
+import 'package:mobile_social_network/features/posts/domain/entities/post_search_sort.dart';
+import 'package:mobile_social_network/features/posts/domain/entities/post_visibility.dart';
 import 'package:mobile_social_network/features/posts/domain/repositories/post_repository.dart';
 
 class PostLocalRepositoryImpl implements PostRepository {
@@ -30,5 +32,17 @@ class PostLocalRepositoryImpl implements PostRepository {
   Future<void> deletePost(int localId) async {
     final db = await DatabaseHelper.instance.database;
     await db.delete('notes', where: 'id = ?', whereArgs: [localId]);
+  }
+
+  @override
+  Future<({List<PostEntity> items, int total})> searchPosts({
+    String? q,
+    PostSearchSort? sort,
+    String? authorUserId,
+    PostVisibility? visibility,
+    int? limit,
+    int? offset,
+  }) {
+    throw UnsupportedError('searchPosts is only available via PostRepositoryImpl');
   }
 }

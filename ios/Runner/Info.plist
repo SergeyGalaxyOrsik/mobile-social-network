@@ -49,5 +49,11 @@
 		<false/>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Allow access to photos to attach images to posts.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Allow the camera to take photos to send in chat and posts.</string>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>remote-notification</string>
+		</array>
 	</dict>
 </plist>

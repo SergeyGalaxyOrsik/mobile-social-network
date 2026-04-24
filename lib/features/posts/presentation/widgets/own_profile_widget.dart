@@ -24,7 +24,11 @@ class OwnProfileWidget extends StatelessWidget {
             child: SizedBox(
               width: 52,
               height: 52,
-              child: buildUserAvatarImage(avatarUrl: avatarUrl, size: 52),
+              child: buildUserAvatarImage(
+                avatarUrl: avatarUrl,
+                size: 52,
+                mediaRewriteContext: context,
+              ),
             ),
           ),
           const SizedBox(width: 16),

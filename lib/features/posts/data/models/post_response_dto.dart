@@ -20,10 +20,68 @@ class PostMediaItemDto {
   }
 }
 
+class PostAuthorAvatarDto {
+  const PostAuthorAvatarDto({this.mediaId, this.url});
+
+  final String? mediaId;
+  final String? url;
+
+  factory PostAuthorAvatarDto.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return const PostAuthorAvatarDto();
+    }
+    return PostAuthorAvatarDto(
+      mediaId: json['media_id'] as String?,
+      url: json['url'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'media_id': mediaId,
+    'url': url,
+  };
+}
+
+class PostAuthorDto {
+  const PostAuthorDto({
+    required this.username,
+    this.bio,
+    required this.avatar,
+  });
+
+  final String username;
+  final String? bio;
+  final PostAuthorAvatarDto avatar;
+
+  factory PostAuthorDto.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return const PostAuthorDto(
+        username: '',
+        bio: null,
+        avatar: PostAuthorAvatarDto(),
+      );
+    }
+    return PostAuthorDto(
+      username: json['username'] as String? ?? '',
+      bio: json['bio'] as String?,
+      avatar: PostAuthorAvatarDto.fromJson(
+        json['avatar'] as Map<String, dynamic>?,
+      ),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'username': username,
+    'bio': bio,
+    'avatar': avatar.toJson(),
+  };
+}
+
 class PostResponseDto {
   const PostResponseDto({
     required this.postId,
     required this.userId,
+    this.author,
     required this.content,
     required this.visibility,
     required this.postCode,
@@ -36,6 +94,7 @@ class PostResponseDto {
 
   final String postId;
   final String userId;
+  final PostAuthorDto? author;
   final String content;
   final PostVisibility visibility;
   final String postCode;
@@ -49,9 +108,18 @@ class PostResponseDto {
     final rawMedia = json['media'] as List<dynamic>?;
     final likesRaw = json['likes_count'];
     final commentsRaw = json['comments_count'];
+    final rawAuthor = json['author'];
+    PostAuthorDto? authorDto;
+    if (rawAuthor is Map<String, dynamic>) {
+      final parsed = PostAuthorDto.fromJson(rawAuthor);
+      if (parsed.username.isNotEmpty) {
+        authorDto = parsed;
+      }
+    }
     return PostResponseDto(
       postId: json['post_id'] as String,
       userId: json['user_id'] as String,
+      author: authorDto,
       content: json['content'] as String,
       visibility: PostVisibility.fromJson(json['visibility'] as String?),
       postCode: json['post_code'] as String,
@@ -72,6 +140,7 @@ class PostResponseDto {
   Map<String, dynamic> toJson() => {
     'post_id': postId,
     'user_id': userId,
+    if (author != null) 'author': author!.toJson(),
     'content': content,
     'visibility': visibility.toJson(),
     'post_code': postCode,

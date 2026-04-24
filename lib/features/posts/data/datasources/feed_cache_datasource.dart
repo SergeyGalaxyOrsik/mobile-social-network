@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:mobile_social_network/core/database/database_helper.dart';
+import 'package:mobile_social_network/features/posts/domain/entities/post_author.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/post_entity.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/post_media_item.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/post_visibility.dart';
@@ -64,6 +65,7 @@ class FeedCacheDataSource {
           localId: post.localId,
           postId: post.postId,
           userId: post.userId,
+          author: post.author,
           content: post.content,
           createdAt: post.createdAt,
           updatedAt: post.updatedAt,
@@ -99,6 +101,9 @@ class FeedCacheDataSource {
         'post_code': post.postCode,
         'position': i,
         'media_json': _encodeMedia(post.media),
+        'author_json': _encodeAuthor(post.author),
+        'likes_count': post.likesCount,
+        'comments_count': post.commentsCount,
         'fetched_at': fetchedAt,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
     }
@@ -110,6 +115,11 @@ class FeedCacheDataSource {
   String? _encodeMedia(List<PostMediaItem>? media) {
     if (media == null || media.isEmpty) return null;
     return jsonEncode(media.map((m) => m.toJson()).toList());
+  }
+
+  String? _encodeAuthor(PostAuthor? author) {
+    if (author == null) return null;
+    return jsonEncode(author.toJson());
   }
 
   Future<List<PostEntity>> readCachedFeed() async {
@@ -126,10 +136,20 @@ class FeedCacheDataSource {
       }
       final likesRaw = row['likes_count'];
       final commentsRaw = row['comments_count'];
+      final authorJson = row['author_json'] as String?;
+      PostAuthor? author;
+      if (authorJson != null && authorJson.isNotEmpty) {
+        try {
+          author = PostAuthor.fromJson(
+            jsonDecode(authorJson) as Map<String, dynamic>,
+          );
+        } catch (_) {}
+      }
       return PostEntity(
         localId: null,
         postId: row['post_id'] as String?,
         userId: row['user_id'] as String?,
+        author: author,
         content: row['content'] as String,
         createdAt: row['created_at'] as String,
         updatedAt: row['updated_at'] as String?,

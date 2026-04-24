@@ -47,4 +47,34 @@ class AuthRemoteDataSource {
       throw ApiException.fromDio(e);
     }
   }
+
+  /// Регистрация FCM-токена после входа (`docs/API_PUSH_EVENTS.md`).
+  Future<void> registerPushToken(
+    String fcmToken, {
+    String? platform,
+  }) async {
+    try {
+      await _dio.post<void>(
+        '/users/me/push-tokens',
+        data: <String, dynamic>{
+          'fcm_token': fcmToken,
+          if (platform != null && platform.isNotEmpty) 'platform': platform,
+        },
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  /// Снятие токена при выходе или отказе от пушей.
+  Future<void> deletePushToken(String fcmToken) async {
+    try {
+      await _dio.delete<void>(
+        '/users/me/push-tokens',
+        data: <String, dynamic>{'fcm_token': fcmToken},
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
 }

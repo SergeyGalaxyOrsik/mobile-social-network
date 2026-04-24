@@ -2,20 +2,23 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
-
+import 'package:mobile_social_network/core/config/media_url_rewrite_config.dart';
+import 'package:mobile_social_network/core/share/post_share_helper.dart';
 import 'package:mobile_social_network/features/auth/domain/entities/user_entity.dart';
 import 'package:mobile_social_network/core/utils/user_avatar.dart';
 import 'package:mobile_social_network/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mobile_social_network/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mobile_social_network/features/feed/presentation/cubit/feed_cubit.dart';
 import 'package:mobile_social_network/features/feed/presentation/cubit/feed_state.dart';
+import 'package:mobile_social_network/features/feed/presentation/cubit/post_search_cubit.dart';
+import 'package:mobile_social_network/features/feed/presentation/pages/post_search_page.dart';
+import 'package:mobile_social_network/features/posts/domain/repositories/post_engagement_repository.dart';
 import 'package:mobile_social_network/features/feed/presentation/widgets/post_comments_sheet.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/post_entity.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/post_media_item.dart';
 import 'package:mobile_social_network/features/posts/domain/repositories/post_repository.dart';
 import 'package:mobile_social_network/features/posts/presentation/pages/edit_post_page.dart';
+import 'package:mobile_social_network/features/social_users/presentation/pages/user_profile_page.dart';
 import 'package:mobile_social_network/l10n/app_localizations.dart';
 
 class FeedPage extends StatefulWidget {
@@ -66,6 +69,29 @@ class _FeedPageState extends State<FeedPage> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    tooltip: AppLocalizations.of(context)!.feedSearchPostsTooltip,
+                    icon: const Icon(Icons.search),
+                    onPressed: () {
+                      final postRepo = context.read<PostRepository>();
+                      final engagement =
+                          context.read<PostEngagementRepository>();
+                      Navigator.of(context).push<void>(
+                        MaterialPageRoute<void>(
+                          builder: (_) => BlocProvider<PostSearchCubit>(
+                            create: (_) => PostSearchCubit(
+                              postRepository: postRepo,
+                              postEngagement: engagement,
+                            ),
+                            child: const PostSearchPage(),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
                 if (state.publishingTasks.isNotEmpty)
                   _PublishingBar(
                     taskCount: state.publishingTasks.length,
@@ -130,11 +156,8 @@ void openPostCommentsSheet(BuildContext context, PostEntity post) {
   );
 }
 
-Future<String?> _resolveImagePath(String? relativePath) async {
-  if (relativePath == null || relativePath.isEmpty) return null;
-  final dir = await getApplicationDocumentsDirectory();
-  return path.join(dir.path, relativePath);
-}
+Future<String?> _resolveImagePath(String? relativePath) =>
+    resolvePostLocalMediaPath(relativePath);
 
 class _PostMediaBlock extends StatelessWidget {
   const _PostMediaBlock({
@@ -213,18 +236,19 @@ class _PostMediaBlock extends StatelessWidget {
 }
 
 Widget _networkImageTile(BuildContext context, String url) {
+  final resolved = context.resolveMediaDisplayUrl(url);
   return GestureDetector(
     onTap: () {
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (context) => _FullScreenNetworkPhotoPage(url: url),
+          builder: (context) => _FullScreenNetworkPhotoPage(url: resolved),
         ),
       );
     },
     child: ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Image.network(
-        url,
+        resolved,
         fit: BoxFit.contain,
         width: double.infinity,
         height: 300,
@@ -374,51 +398,57 @@ class _PostCard extends StatelessWidget {
                 if (author != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.outline,
+                    child: InkWell(
+                      onTap: post.userId != null && post.userId!.isNotEmpty
+                          ? () => pushUserProfilePage(context, post.userId!)
+                          : null,
+                      child: Row(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
+                            ),
+                            child: SizedBox(
+                              width: 40,
+                              height: 40,
+                              child: buildUserAvatarImage(
+                                avatarUrl: author!.avatarUrl,
+                                size: 40,
+                                mediaRewriteContext: context,
+                              ),
                             ),
                           ),
-                          child: SizedBox(
-                            width: 40,
-                            height: 40,
-                            child: buildUserAvatarImage(
-                              avatarUrl: author!.avatarUrl,
-                              size: 40,
-                            ),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                author!.username?.isNotEmpty == true
+                                    ? author!.username!
+                                    : author!.email,
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                              Text(
+                                post.createdAt,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              author!.username?.isNotEmpty == true
-                                  ? author!.username!
-                                  : author!.email,
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurface,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                            ),
-                            Text(
-                              post.createdAt,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 Text(post.content, style: Theme.of(context).textTheme.bodyLarge),
@@ -471,10 +501,10 @@ class _PostCard extends StatelessWidget {
                     },
                   ),
                 ],
-                if (post.postId != null) ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    if (post.postId != null) ...[
                       IconButton(
                         tooltip: l10n.likeTooltip,
                         onPressed: onToggleLike,
@@ -502,9 +532,28 @@ class _PostCard extends StatelessWidget {
                         '${post.commentsCount}',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
+                      const SizedBox(width: 4),
                     ],
-                  ),
-                ],
+                    IconButton(
+                      tooltip: l10n.postShareTooltip,
+                      onPressed: () => PostShareHelper.sharePost(
+                        context,
+                        post,
+                        l10n,
+                        resolveImagePath: resolveImagePath,
+                        shareAuthorLabel: author != null
+                            ? (author!.username?.isNotEmpty == true
+                                ? author!.username
+                                : author!.email)
+                            : post.author?.username,
+                      ),
+                      icon: Icon(
+                        Icons.share_outlined,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
 

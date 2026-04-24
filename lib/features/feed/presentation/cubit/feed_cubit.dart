@@ -37,6 +37,19 @@ class FeedCubit extends Cubit<FeedState> {
     final posts = await _postRepository.getPosts();
     posts.sort((a, b) => (b.localId ?? 0).compareTo(a.localId ?? 0));
     final authorByUserId = <String, UserEntity>{};
+    for (final p in posts) {
+      final uid = p.userId;
+      if (uid == null || uid.isEmpty) continue;
+      final a = p.author;
+      if (a != null && a.username.isNotEmpty) {
+        authorByUserId[uid] = UserEntity(
+          id: uid,
+          email: '',
+          username: a.username,
+          avatarUrl: a.avatarUrl,
+        );
+      }
+    }
     final effective = currentUser ?? _sessionUser;
     if (effective != null) {
       authorByUserId[effective.id] = effective;
@@ -73,7 +86,6 @@ class FeedCubit extends Cubit<FeedState> {
     emit(state.copyWith(clearEngagementError: true));
   }
 
-  /// Оптимистичный лайк поста; при ошибке откат и [lastEngagementError].
   Future<void> togglePostLike(String postId) async {
     final idx = state.posts.indexWhere((p) => p.postId == postId);
     if (idx < 0) return;
@@ -136,7 +148,6 @@ class FeedCubit extends Cubit<FeedState> {
     emit(state.copyWith(commentLikedByMe: m));
   }
 
-  /// Фоновая публикация: экран создания поста закрывается сразу после вызова.
   void enqueuePublish({
     required String userId,
     required String content,

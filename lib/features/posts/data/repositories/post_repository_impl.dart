@@ -4,6 +4,7 @@ import 'package:mobile_social_network/features/posts/data/datasources/posts_remo
 import 'package:mobile_social_network/features/posts/data/mappers/post_response_dto_mapper.dart';
 import 'package:mobile_social_network/features/posts/data/models/create_post_dto.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/post_entity.dart';
+import 'package:mobile_social_network/features/posts/domain/entities/post_search_sort.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/post_visibility.dart';
 import 'package:mobile_social_network/features/posts/domain/repositories/post_repository.dart';
 
@@ -50,6 +51,7 @@ class PostRepositoryImpl implements PostRepository {
       localId: null,
       postId: fromApi.postId,
       userId: fromApi.userId,
+      author: fromApi.author,
       content: fromApi.content,
       createdAt: fromApi.createdAt,
       updatedAt: fromApi.updatedAt,
@@ -68,4 +70,25 @@ class PostRepositoryImpl implements PostRepository {
 
   @override
   Future<void> deletePost(int localId) => _local.deletePost(localId);
+
+  @override
+  Future<({List<PostEntity> items, int total})> searchPosts({
+    String? q,
+    PostSearchSort? sort,
+    String? authorUserId,
+    PostVisibility? visibility,
+    int? limit,
+    int? offset,
+  }) async {
+    final feed = await _remote.searchPosts(
+      q: q,
+      sort: sort,
+      authorUserId: authorUserId,
+      visibility: visibility,
+      limit: limit,
+      offset: offset,
+    );
+    final list = feed.items.map((dto) => dto.toEntity()).toList();
+    return (items: list, total: feed.total.toInt());
+  }
 }

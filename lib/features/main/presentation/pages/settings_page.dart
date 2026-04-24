@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:mobile_social_network/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mobile_social_network/features/auth/presentation/bloc/auth_event.dart';
+import 'package:mobile_social_network/features/chat/presentation/chat_navigation.dart';
 import 'package:mobile_social_network/core/theme/locale_scope.dart';
 import 'package:mobile_social_network/core/theme/theme_mode_scope.dart';
 import 'package:mobile_social_network/l10n/app_localizations.dart';
@@ -71,6 +72,11 @@ class SettingsPage extends StatelessWidget {
             onChanged: (_) => localeScope.setLocale(const Locale('en')),
           ),
           const Divider(height: 32),
+          ListTile(
+            title: Text(l10n.chatBlockedUsersTitle),
+            leading: const Icon(Icons.block),
+            onTap: () => pushChatBlocksPage(context),
+          ),
           ListTile(
             title: Text(l10n.logout),
             leading: const Icon(Icons.logout),

@@ -20,8 +20,20 @@ class DevAppConfig extends AppConfig {
     }
   }
 
+  /// MinIO на хосте: с Android-эмулятора `127.0.0.1` — это loopback эмулятора, не машина.
+  /// `10.0.2.2` — алиас хоста с эмулятора (как для API :3000).
   @override
-  String get presignedUploadOrigin => 'http://127.0.0.1:9000';
+  String get presignedUploadOrigin {
+    if (kIsWeb) {
+      return 'http://127.0.0.1:9000';
+    }
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return 'http://10.0.2.2:9000';
+      default:
+        return 'http://127.0.0.1:9000';
+    }
+  }
 
   @override
   String get environmentLabel => 'dev';

@@ -52,6 +52,7 @@ class _EditPostPageState extends State<EditPostPage> {
       postCode: post.postCode,
       image: post.image,
       media: post.media,
+      author: post.author,
       likesCount: post.likesCount,
       commentsCount: post.commentsCount,
     );
