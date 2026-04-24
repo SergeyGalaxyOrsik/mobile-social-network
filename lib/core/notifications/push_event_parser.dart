@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-/// События из `data["event"]` согласно `docs/API_PUSH_EVENTS.md`.
 enum PushServerEvent {
   friendRequest,
   friendAdded,
@@ -8,7 +7,6 @@ enum PushServerEvent {
   unknown,
 }
 
-/// Разобранное FCM `data` (все значения — строки).
 class ParsedPushMessage {
   const ParsedPushMessage({
     required this.event,

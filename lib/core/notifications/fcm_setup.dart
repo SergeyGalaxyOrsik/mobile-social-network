@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 
 import 'package:mobile_social_network/firebase_options.dart';
 
-/// Обработчик уведомлений в фоновом isolate. Должен быть top-level.
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -15,8 +14,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   }
 }
 
-/// Разрешения и отключение дублирующего системного баннера iOS в foreground
-/// (in-app показ через [PushNavigation.showForegroundBanner]).
 Future<void> setupFirebaseMessaging() async {
   final messaging = FirebaseMessaging.instance;
 

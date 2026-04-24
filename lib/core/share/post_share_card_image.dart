@@ -15,7 +15,6 @@ final class PostShareCardImageBuilder {
   static const double _maxHeight = 1920;
   static const double _maxImageBlockHeight = 720;
 
-  /// Writes `post_share_<id>.png` into [outputDirectory].
   static Future<File?> renderToPngFile({
     required PostEntity post,
     required String authorLine,

@@ -14,18 +14,12 @@ import 'package:mobile_social_network/features/posts/domain/entities/post_entity
 import 'package:mobile_social_network/features/posts/domain/entities/post_media_item.dart';
 import 'package:mobile_social_network/l10n/app_localizations.dart';
 
-/// Resolves a path stored relative to app documents (same as feed local images).
 Future<String?> resolvePostLocalMediaPath(String? relativePath) async {
   if (relativePath == null || relativePath.isEmpty) return null;
   final dir = await getApplicationDocumentsDirectory();
   return p.join(dir.path, relativePath);
 }
 
-/// Builds a PNG card for the post and opens the system share sheet with that file
-/// only (no separate text intent), so targets like Instagram see a single image.
-///
-/// Instagram does not expose a public API for third-party Story publishing; the
-/// user picks Instagram (Story or Feed) from the OS share targets.
 final class PostShareHelper {
   PostShareHelper._();
 

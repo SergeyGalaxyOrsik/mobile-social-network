@@ -1,6 +1,3 @@
-/// Builds the Socket.IO URL for namespace `/chat` from the same API base as [Dio].
-///
-/// Uses [Uri.origin] so a REST base like `https://host/api/v1` still maps to `https://host`.
 String resolveChatSocketUri(String apiBaseUrl) {
   final trimmed = apiBaseUrl.trim();
   if (trimmed.isEmpty) {

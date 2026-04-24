@@ -40,7 +40,7 @@ bool _looksLikeErrorMap(Map<String, dynamic> m) {
   return false;
 }
 
-/// Socket.IO client for namespace `/chat` ([docs/API_CHAT.md](docs/API_CHAT.md)).
+/// Socket.IO client
 class ChatSocketClient {
   ChatSocketClient({
     required this.socketUri,
@@ -201,7 +201,6 @@ class ChatSocketClient {
     }
   }
 
-  /// Returns null if not connected or ack indicates failure (caller uses REST).
   Future<DirectMessage?> trySend({
     required String peerUserId,
     String? body,

@@ -8,7 +8,6 @@ import 'package:mobile_social_network/core/notifications/push_main_intent.dart';
 import 'package:mobile_social_network/l10n/app_localizations.dart';
 import 'package:mobile_social_network/features/social_users/presentation/pages/user_profile_page.dart';
 
-/// Сообщение из уведомления до завершения входа (cold start по тапу).
 class PendingPushOpenMessage {
   PendingPushOpenMessage._();
 
@@ -25,9 +24,7 @@ class PendingPushOpenMessage {
   }
 }
 
-/// Навигация и in-app UI по контракту FCM `data`.
 abstract final class PushNavigation {
-  /// Пользователь открыл приложение из системного уведомления.
   static void handleNotificationOpened(RemoteMessage message) {
     final parsed = ParsedPushMessage.tryParse(message.data);
     if (parsed == null) {
@@ -36,7 +33,6 @@ abstract final class PushNavigation {
     _route(parsed);
   }
 
-  /// Сообщение на переднем плане: баннер по `data`, действие «Открыть» ведёт на экран.
   static void showForegroundBanner(RemoteMessage message) {
     final parsed = ParsedPushMessage.tryParse(message.data);
     if (parsed == null) {

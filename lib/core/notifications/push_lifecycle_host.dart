@@ -10,7 +10,6 @@ import 'package:mobile_social_network/features/auth/data/datasources/auth_remote
 import 'package:mobile_social_network/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mobile_social_network/features/auth/presentation/bloc/auth_state.dart';
 
-/// Регистрация FCM-токена на бэкенде, обновление токена и маршрутизация по пушам.
 class PushLifecycleHost extends StatefulWidget {
   const PushLifecycleHost({
     super.key,
