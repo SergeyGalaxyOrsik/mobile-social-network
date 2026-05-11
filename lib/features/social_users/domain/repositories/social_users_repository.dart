@@ -25,15 +25,11 @@ abstract class SocialUsersRepository {
 
   Future<SendFriendRequestResult> sendFriendRequest(String targetUserId);
 
-  Future<({List<FriendRequestItem> items, int total})> getIncomingFriendRequests({
-    int? limit,
-    int? offset,
-  });
+  Future<({List<FriendRequestItem> items, int total})>
+  getIncomingFriendRequests({int? limit, int? offset});
 
-  Future<({List<FriendRequestItem> items, int total})> getOutgoingFriendRequests({
-    int? limit,
-    int? offset,
-  });
+  Future<({List<FriendRequestItem> items, int total})>
+  getOutgoingFriendRequests({int? limit, int? offset});
 
   Future<void> acceptFriendRequest(String requestId);
 

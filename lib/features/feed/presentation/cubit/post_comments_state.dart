@@ -48,12 +48,12 @@ class PostCommentsState extends Equatable {
 
   @override
   List<Object?> get props => [
-        comments,
-        total,
-        loadingInitial,
-        loadingMore,
-        loadError,
-        lastActionError,
-        sending,
-      ];
+    comments,
+    total,
+    loadingInitial,
+    loadingMore,
+    loadError,
+    lastActionError,
+    sending,
+  ];
 }

@@ -29,8 +29,22 @@ import 'package:mobile_social_network/features/chat/presentation/chat_navigation
 import 'package:mobile_social_network/features/chat/presentation/pages/chat_blocks_page.dart';
 import 'package:mobile_social_network/features/chat/presentation/pages/conversations_page.dart';
 import 'package:mobile_social_network/features/chat/presentation/pages/direct_chat_page.dart';
+import 'package:mobile_social_network/features/custom_tags/data/datasources/custom_tags_remote_datasource.dart';
+import 'package:mobile_social_network/features/custom_tags/data/repositories/custom_tags_repository_impl.dart';
+import 'package:mobile_social_network/features/custom_tags/domain/repositories/custom_tags_repository.dart';
+import 'package:mobile_social_network/features/draft_posts/data/datasources/draft_posts_remote_datasource.dart';
+import 'package:mobile_social_network/features/draft_posts/data/repositories/draft_posts_repository_impl.dart';
+import 'package:mobile_social_network/features/draft_posts/domain/repositories/draft_posts_repository.dart';
+import 'package:mobile_social_network/features/draft_posts/presentation/pages/draft_posts_page.dart';
 import 'package:mobile_social_network/features/media/data/datasources/media_remote_datasource.dart';
 import 'package:mobile_social_network/features/media/data/media_upload_service.dart';
+import 'package:mobile_social_network/features/moderation/data/datasources/moderation_remote_datasource.dart';
+import 'package:mobile_social_network/features/moderation/data/repositories/moderation_repository_impl.dart';
+import 'package:mobile_social_network/features/moderation/domain/repositories/moderation_repository.dart';
+import 'package:mobile_social_network/features/notifications/data/datasources/notifications_remote_datasource.dart';
+import 'package:mobile_social_network/features/notifications/data/repositories/notifications_repository_impl.dart';
+import 'package:mobile_social_network/features/notifications/domain/repositories/notifications_repository.dart';
+import 'package:mobile_social_network/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:mobile_social_network/core/theme/app_asset.dart';
 import 'package:mobile_social_network/core/theme/locale_scope.dart';
 import 'package:mobile_social_network/core/theme/theme_mode_scope.dart';
@@ -55,16 +69,27 @@ import 'package:mobile_social_network/features/posts/data/repositories/post_repo
 import 'package:mobile_social_network/features/posts/domain/repositories/post_engagement_repository.dart';
 import 'package:mobile_social_network/features/posts/domain/repositories/post_repository.dart';
 import 'package:mobile_social_network/features/posts/presentation/pages/create_post_page.dart';
+import 'package:mobile_social_network/features/reference/data/datasources/reference_remote_datasource.dart';
+import 'package:mobile_social_network/features/reference/data/repositories/reference_repository_impl.dart';
+import 'package:mobile_social_network/features/reference/domain/repositories/reference_repository.dart';
+import 'package:mobile_social_network/features/reports/data/datasources/reports_remote_datasource.dart';
+import 'package:mobile_social_network/features/reports/data/repositories/reports_repository_impl.dart';
+import 'package:mobile_social_network/features/reports/domain/repositories/reports_repository.dart';
+import 'package:mobile_social_network/features/saved_posts/data/datasources/saved_posts_remote_datasource.dart';
+import 'package:mobile_social_network/features/saved_posts/data/repositories/saved_posts_repository_impl.dart';
+import 'package:mobile_social_network/features/saved_posts/domain/repositories/saved_posts_repository.dart';
+import 'package:mobile_social_network/features/saved_posts/presentation/pages/saved_posts_page.dart';
 import 'package:mobile_social_network/features/social_users/data/datasources/social_users_remote_datasource.dart';
 import 'package:mobile_social_network/features/social_users/data/repositories/social_users_repository_impl.dart';
 import 'package:mobile_social_network/features/social_users/domain/repositories/social_users_repository.dart';
+import 'package:mobile_social_network/features/user_settings/data/datasources/user_settings_remote_datasource.dart';
+import 'package:mobile_social_network/features/user_settings/data/repositories/user_settings_repository_impl.dart';
+import 'package:mobile_social_network/features/user_settings/domain/repositories/user_settings_repository.dart';
 import 'package:mobile_social_network/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   await setupFirebaseMessaging();
   FlutterNativeSplash.preserve(widgetsBinding: WidgetsBinding.instance);
@@ -118,8 +143,9 @@ void main() async {
     feedCache: feedCache,
   );
   final socialUsersRemote = SocialUsersRemoteDataSource(dio);
-  final SocialUsersRepository socialUsersRepository =
-      SocialUsersRepositoryImpl(socialUsersRemote);
+  final SocialUsersRepository socialUsersRepository = SocialUsersRepositoryImpl(
+    socialUsersRemote,
+  );
   final chatRemote = ChatRemoteDataSource(dio);
   final chatSocket = ChatSocketClient(
     socketUri: resolveChatSocketUri(appConfig.apiBaseUrl),
@@ -129,23 +155,55 @@ void main() async {
     remote: chatRemote,
     socket: chatSocket,
   );
+  final ReferenceRepository referenceRepository = ReferenceRepositoryImpl(
+    ReferenceRemoteDataSource(dio),
+  );
+  final UserSettingsRepository userSettingsRepository =
+      UserSettingsRepositoryImpl(UserSettingsRemoteDataSource(dio));
+  final DraftPostsRepository draftPostsRepository = DraftPostsRepositoryImpl(
+    DraftPostsRemoteDataSource(dio),
+  );
+  final SavedPostsRepository savedPostsRepository = SavedPostsRepositoryImpl(
+    SavedPostsRemoteDataSource(dio),
+  );
+  final CustomTagsRepository customTagsRepository = CustomTagsRepositoryImpl(
+    CustomTagsRemoteDataSource(dio),
+  );
+  final NotificationsRepository notificationsRepository =
+      NotificationsRepositoryImpl(NotificationsRemoteDataSource(dio));
+  final ReportsRepository reportsRepository = ReportsRepositoryImpl(
+    ReportsRemoteDataSource(dio),
+  );
+  final ModerationRepository moderationRepository = ModerationRepositoryImpl(
+    ModerationRemoteDataSource(dio),
+  );
   final authBloc = AuthBloc(authRepository: authRepository);
   final mediaUrlRewriteConfig = MediaUrlRewriteConfig(
     appConfig.presignedUploadOrigin,
   );
 
-  runApp(MyApp(
-    authBloc: authBloc,
-    authRemote: authRemote,
-    preferences: preferences,
-    userRepository: userRepository,
-    postRepository: postRepository,
-    postEngagementRepository: postEngagementRepository,
-    mediaUploadService: mediaUploadService,
-    socialUsersRepository: socialUsersRepository,
-    chatRepository: chatRepository,
-    mediaUrlRewriteConfig: mediaUrlRewriteConfig,
-  ));
+  runApp(
+    MyApp(
+      authBloc: authBloc,
+      authRemote: authRemote,
+      preferences: preferences,
+      userRepository: userRepository,
+      postRepository: postRepository,
+      postEngagementRepository: postEngagementRepository,
+      mediaUploadService: mediaUploadService,
+      socialUsersRepository: socialUsersRepository,
+      chatRepository: chatRepository,
+      referenceRepository: referenceRepository,
+      userSettingsRepository: userSettingsRepository,
+      draftPostsRepository: draftPostsRepository,
+      savedPostsRepository: savedPostsRepository,
+      customTagsRepository: customTagsRepository,
+      notificationsRepository: notificationsRepository,
+      reportsRepository: reportsRepository,
+      moderationRepository: moderationRepository,
+      mediaUrlRewriteConfig: mediaUrlRewriteConfig,
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -160,6 +218,14 @@ class MyApp extends StatefulWidget {
     required this.mediaUploadService,
     required this.socialUsersRepository,
     required this.chatRepository,
+    required this.referenceRepository,
+    required this.userSettingsRepository,
+    required this.draftPostsRepository,
+    required this.savedPostsRepository,
+    required this.customTagsRepository,
+    required this.notificationsRepository,
+    required this.reportsRepository,
+    required this.moderationRepository,
     required this.mediaUrlRewriteConfig,
   });
 
@@ -172,6 +238,14 @@ class MyApp extends StatefulWidget {
   final MediaUploadService mediaUploadService;
   final SocialUsersRepository socialUsersRepository;
   final ChatRepository chatRepository;
+  final ReferenceRepository referenceRepository;
+  final UserSettingsRepository userSettingsRepository;
+  final DraftPostsRepository draftPostsRepository;
+  final SavedPostsRepository savedPostsRepository;
+  final CustomTagsRepository customTagsRepository;
+  final NotificationsRepository notificationsRepository;
+  final ReportsRepository reportsRepository;
+  final ModerationRepository moderationRepository;
   final MediaUrlRewriteConfig mediaUrlRewriteConfig;
 
   static DateTime? splashStartedAt;
@@ -265,57 +339,67 @@ class _MyAppState extends State<MyApp> {
                   locale: _locale,
                   setLocale: _setLocale,
                   child: MaterialApp(
-                  navigatorKey: appRootNavigatorKey,
-                  scaffoldMessengerKey: appRootMessengerKey,
-                  title: _locale?.languageCode == 'en'
-                      ? 'Social Network'
-                      : 'Социальная сеть',
-                  theme: AppAsset.themeLight,
-                  darkTheme: AppAsset.themeDark,
-                  themeMode: _themeMode,
-                  locale: _locale,
-                  localizationsDelegates:
-                      AppLocalizations.localizationsDelegates,
-                  supportedLocales: AppLocalizations.supportedLocales,
-                  builder: (context, child) {
-                    return PushLifecycleHost(
-                      authRemote: widget.authRemote,
-                      child: BlocBuilder<InternetConnectivityCubit,
-                          InternetConnectivityState>(
-                        buildWhen: (previous, current) =>
-                            previous.showOfflineBanner !=
-                            current.showOfflineBanner,
-                        builder: (context, state) {
-                          return Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              child ?? const SizedBox.shrink(),
-                              if (state.showOfflineBanner)
-                                const Positioned(
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  child: ConnectivityBanner(),
-                                ),
-                            ],
-                          );
-                        },
-                      ),
-                    );
-                  },
-                  home: _AuthGate(
-                    userRepository: widget.userRepository,
-                    postRepository: widget.postRepository,
-                    postEngagementRepository:
-                        widget.postEngagementRepository,
-                    mediaUploadService: widget.mediaUploadService,
-                    socialUsersRepository: widget.socialUsersRepository,
+                    navigatorKey: appRootNavigatorKey,
+                    scaffoldMessengerKey: appRootMessengerKey,
+                    title: _locale?.languageCode == 'en'
+                        ? 'Social Network'
+                        : 'Социальная сеть',
+                    theme: AppAsset.themeLight,
+                    darkTheme: AppAsset.themeDark,
+                    themeMode: _themeMode,
+                    locale: _locale,
+                    localizationsDelegates:
+                        AppLocalizations.localizationsDelegates,
+                    supportedLocales: AppLocalizations.supportedLocales,
+                    builder: (context, child) {
+                      return PushLifecycleHost(
+                        authRemote: widget.authRemote,
+                        child:
+                            BlocBuilder<
+                              InternetConnectivityCubit,
+                              InternetConnectivityState
+                            >(
+                              buildWhen: (previous, current) =>
+                                  previous.showOfflineBanner !=
+                                  current.showOfflineBanner,
+                              builder: (context, state) {
+                                return Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    child ?? const SizedBox.shrink(),
+                                    if (state.showOfflineBanner)
+                                      const Positioned(
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        child: ConnectivityBanner(),
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
+                      );
+                    },
+                    home: _AuthGate(
+                      userRepository: widget.userRepository,
+                      postRepository: widget.postRepository,
+                      postEngagementRepository: widget.postEngagementRepository,
+                      mediaUploadService: widget.mediaUploadService,
+                      socialUsersRepository: widget.socialUsersRepository,
+                      referenceRepository: widget.referenceRepository,
+                      userSettingsRepository: widget.userSettingsRepository,
+                      draftPostsRepository: widget.draftPostsRepository,
+                      savedPostsRepository: widget.savedPostsRepository,
+                      customTagsRepository: widget.customTagsRepository,
+                      notificationsRepository: widget.notificationsRepository,
+                      reportsRepository: widget.reportsRepository,
+                      moderationRepository: widget.moderationRepository,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
         ),
       ),
     );
@@ -331,6 +415,14 @@ class _AuthGate extends StatefulWidget {
     required this.postEngagementRepository,
     required this.mediaUploadService,
     required this.socialUsersRepository,
+    required this.referenceRepository,
+    required this.userSettingsRepository,
+    required this.draftPostsRepository,
+    required this.savedPostsRepository,
+    required this.customTagsRepository,
+    required this.notificationsRepository,
+    required this.reportsRepository,
+    required this.moderationRepository,
   });
 
   final UserRepository userRepository;
@@ -338,6 +430,14 @@ class _AuthGate extends StatefulWidget {
   final PostEngagementRepository postEngagementRepository;
   final MediaUploadService mediaUploadService;
   final SocialUsersRepository socialUsersRepository;
+  final ReferenceRepository referenceRepository;
+  final UserSettingsRepository userSettingsRepository;
+  final DraftPostsRepository draftPostsRepository;
+  final SavedPostsRepository savedPostsRepository;
+  final CustomTagsRepository customTagsRepository;
+  final NotificationsRepository notificationsRepository;
+  final ReportsRepository reportsRepository;
+  final ModerationRepository moderationRepository;
 
   @override
   State<_AuthGate> createState() => _AuthGateState();
@@ -362,51 +462,113 @@ class _AuthGateState extends State<_AuthGate> {
               value: widget.postRepository,
               child: RepositoryProvider<SocialUsersRepository>.value(
                 value: widget.socialUsersRepository,
-                child: RepositoryProvider<PostEngagementRepository>.value(
-                  value: widget.postEngagementRepository,
-                  child: RepositoryProvider<MediaUploadService>.value(
-                    value: widget.mediaUploadService,
-                    child: BlocProvider<FeedCubit>(
-                      create: (context) => FeedCubit(
-                        postRepository: context.read<PostRepository>(),
-                        postEngagementRepository:
-                            context.read<PostEngagementRepository>(),
-                        mediaUploadService: widget.mediaUploadService,
-                      ),
-                      child: Navigator(
-                        key: appShellNavigatorKey,
-                        onGenerateInitialRoutes: (_, __) => [
-                          MaterialPageRoute<void>(
-                            builder: (_) => MainPage(user: user),
+                child: RepositoryProvider<ReferenceRepository>.value(
+                  value: widget.referenceRepository,
+                  child: RepositoryProvider<UserSettingsRepository>.value(
+                    value: widget.userSettingsRepository,
+                    child: RepositoryProvider<DraftPostsRepository>.value(
+                      value: widget.draftPostsRepository,
+                      child: RepositoryProvider<SavedPostsRepository>.value(
+                        value: widget.savedPostsRepository,
+                        child: RepositoryProvider<CustomTagsRepository>.value(
+                          value: widget.customTagsRepository,
+                          child: RepositoryProvider<NotificationsRepository>.value(
+                            value: widget.notificationsRepository,
+                            child: RepositoryProvider<ReportsRepository>.value(
+                              value: widget.reportsRepository,
+                              child: RepositoryProvider<ModerationRepository>.value(
+                                value: widget.moderationRepository,
+                                child: RepositoryProvider<PostEngagementRepository>.value(
+                                  value: widget.postEngagementRepository,
+                                  child:
+                                      RepositoryProvider<
+                                        MediaUploadService
+                                      >.value(
+                                        value: widget.mediaUploadService,
+                                        child: BlocProvider<FeedCubit>(
+                                          create: (context) => FeedCubit(
+                                            postRepository: context
+                                                .read<PostRepository>(),
+                                            postEngagementRepository: context
+                                                .read<
+                                                  PostEngagementRepository
+                                                >(),
+                                            mediaUploadService:
+                                                widget.mediaUploadService,
+                                          ),
+                                          child: Navigator(
+                                            key: appShellNavigatorKey,
+                                            onGenerateInitialRoutes: (_, __) =>
+                                                [
+                                                  MaterialPageRoute<void>(
+                                                    builder: (_) =>
+                                                        MainPage(user: user),
+                                                  ),
+                                                ],
+                                            onGenerateRoute: (settings) {
+                                              if (settings.name == '/create') {
+                                                return MaterialPageRoute<void>(
+                                                  builder: (_) =>
+                                                      const CreatePostPage(),
+                                                );
+                                              }
+                                              if (settings.name == '/drafts') {
+                                                return MaterialPageRoute<void>(
+                                                  builder: (_) =>
+                                                      const DraftPostsPage(),
+                                                );
+                                              }
+                                              if (settings.name ==
+                                                  '/saved-posts') {
+                                                return MaterialPageRoute<void>(
+                                                  builder: (_) =>
+                                                      const SavedPostsPage(),
+                                                );
+                                              }
+                                              if (settings.name ==
+                                                  '/notifications') {
+                                                return MaterialPageRoute<void>(
+                                                  builder: (_) =>
+                                                      const NotificationsPage(),
+                                                );
+                                              }
+                                              if (settings.name ==
+                                                  '/conversations') {
+                                                return MaterialPageRoute<void>(
+                                                  builder: (_) =>
+                                                      const ConversationsPage(),
+                                                );
+                                              }
+                                              if (settings.name == '/chat') {
+                                                final args = settings.arguments;
+                                                if (args
+                                                    is! DirectChatRouteArgs) {
+                                                  return null;
+                                                }
+                                                return MaterialPageRoute<void>(
+                                                  builder: (_) =>
+                                                      DirectChatPage(
+                                                        args: args,
+                                                      ),
+                                                );
+                                              }
+                                              if (settings.name ==
+                                                  '/chat/blocks') {
+                                                return MaterialPageRoute<void>(
+                                                  builder: (_) =>
+                                                      const ChatBlocksPage(),
+                                                );
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                ),
+                              ),
+                            ),
                           ),
-                        ],
-                        onGenerateRoute: (settings) {
-                          if (settings.name == '/create') {
-                            return MaterialPageRoute<void>(
-                              builder: (_) => const CreatePostPage(),
-                            );
-                          }
-                          if (settings.name == '/conversations') {
-                            return MaterialPageRoute<void>(
-                              builder: (_) => const ConversationsPage(),
-                            );
-                          }
-                          if (settings.name == '/chat') {
-                            final args = settings.arguments;
-                            if (args is! DirectChatRouteArgs) {
-                              return null;
-                            }
-                            return MaterialPageRoute<void>(
-                              builder: (_) => DirectChatPage(args: args),
-                            );
-                          }
-                          if (settings.name == '/chat/blocks') {
-                            return MaterialPageRoute<void>(
-                              builder: (_) => const ChatBlocksPage(),
-                            );
-                          }
-                          return null;
-                        },
+                        ),
                       ),
                     ),
                   ),
@@ -418,7 +580,7 @@ class _AuthGateState extends State<_AuthGate> {
         if (state is AuthUnauthenticated || state is AuthError) {
           return const LoginPage();
         }
-        
+
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       },
     );

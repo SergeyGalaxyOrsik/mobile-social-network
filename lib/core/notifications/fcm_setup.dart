@@ -8,9 +8,7 @@ import 'package:mobile_social_network/firebase_options.dart';
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   if (kDebugMode) {
-    debugPrint(
-      'FCM background: id=${message.messageId} data=${message.data}',
-    );
+    debugPrint('FCM background: id=${message.messageId} data=${message.data}');
   }
 }
 

@@ -7,10 +7,8 @@ import 'package:mobile_social_network/features/social_users/domain/repositories/
 import 'package:mobile_social_network/features/social_users/presentation/cubit/user_profile_state.dart';
 
 class UserProfileCubit extends Cubit<UserProfileState> {
-  UserProfileCubit(
-    this._repository,
-    this.profileUserId,
-  ) : super(const UserProfileState());
+  UserProfileCubit(this._repository, this.profileUserId)
+    : super(const UserProfileState());
 
   final SocialUsersRepository _repository;
   final String profileUserId;
@@ -36,19 +34,9 @@ class UserProfileCubit extends Cubit<UserProfileState> {
       );
       emit(state.copyWith(loading: false, profile: p));
     } on ApiException catch (e) {
-      emit(
-        state.copyWith(
-          loading: false,
-          errorMessage: e.userMessage,
-        ),
-      );
+      emit(state.copyWith(loading: false, errorMessage: e.userMessage));
     } catch (e) {
-      emit(
-        state.copyWith(
-          loading: false,
-          errorMessage: e.toString(),
-        ),
-      );
+      emit(state.copyWith(loading: false, errorMessage: e.toString()));
     }
   }
 
@@ -64,7 +52,9 @@ class UserProfileCubit extends Cubit<UserProfileState> {
         offset: cur.posts.length,
       );
       final seen = cur.posts.map((p) => p.postId).toSet();
-      final extra = next.posts.where((p) => p.postId != null && !seen.contains(p.postId)).toList();
+      final extra = next.posts
+          .where((p) => p.postId != null && !seen.contains(p.postId))
+          .toList();
       final merged = [...cur.posts, ...extra];
       final updated = ProfileWithPosts(
         userId: next.userId,
@@ -79,19 +69,9 @@ class UserProfileCubit extends Cubit<UserProfileState> {
       );
       emit(state.copyWith(loadingMore: false, profile: updated));
     } on ApiException catch (e) {
-      emit(
-        state.copyWith(
-          loadingMore: false,
-          errorMessage: e.userMessage,
-        ),
-      );
+      emit(state.copyWith(loadingMore: false, errorMessage: e.userMessage));
     } catch (e) {
-      emit(
-        state.copyWith(
-          loadingMore: false,
-          errorMessage: e.toString(),
-        ),
-      );
+      emit(state.copyWith(loadingMore: false, errorMessage: e.toString()));
     }
   }
 
@@ -104,7 +84,9 @@ class UserProfileCubit extends Cubit<UserProfileState> {
   }
 
   Future<void> sendFriendRequest() async {
-    emit(state.copyWith(actionBusy: true, clearError: true, clearFeedback: true));
+    emit(
+      state.copyWith(actionBusy: true, clearError: true, clearFeedback: true),
+    );
     try {
       final r = await _repository.sendFriendRequest(profileUserId);
       await load(reset: true);
@@ -124,7 +106,9 @@ class UserProfileCubit extends Cubit<UserProfileState> {
   }
 
   Future<void> cancelOutgoingRequest() async {
-    emit(state.copyWith(actionBusy: true, clearError: true, clearFeedback: true));
+    emit(
+      state.copyWith(actionBusy: true, clearError: true, clearFeedback: true),
+    );
     try {
       final id = await _repository.findOutgoingRequestIdForPeer(profileUserId);
       if (id == null) {
@@ -152,7 +136,9 @@ class UserProfileCubit extends Cubit<UserProfileState> {
   }
 
   Future<void> acceptIncomingRequest() async {
-    emit(state.copyWith(actionBusy: true, clearError: true, clearFeedback: true));
+    emit(
+      state.copyWith(actionBusy: true, clearError: true, clearFeedback: true),
+    );
     try {
       final id = await _repository.findIncomingRequestIdForPeer(profileUserId);
       if (id == null) {
@@ -180,7 +166,9 @@ class UserProfileCubit extends Cubit<UserProfileState> {
   }
 
   Future<void> declineIncomingRequest() async {
-    emit(state.copyWith(actionBusy: true, clearError: true, clearFeedback: true));
+    emit(
+      state.copyWith(actionBusy: true, clearError: true, clearFeedback: true),
+    );
     try {
       final id = await _repository.findIncomingRequestIdForPeer(profileUserId);
       if (id == null) {
@@ -211,7 +199,9 @@ class UserProfileCubit extends Cubit<UserProfileState> {
     required String reasonCode,
     String? details,
   }) async {
-    emit(state.copyWith(actionBusy: true, clearError: true, clearFeedback: true));
+    emit(
+      state.copyWith(actionBusy: true, clearError: true, clearFeedback: true),
+    );
     try {
       await _repository.reportUser(
         reportedUserId: profileUserId,

@@ -36,18 +36,11 @@ class PostAuthorAvatarDto {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'media_id': mediaId,
-    'url': url,
-  };
+  Map<String, dynamic> toJson() => {'media_id': mediaId, 'url': url};
 }
 
 class PostAuthorDto {
-  const PostAuthorDto({
-    required this.username,
-    this.bio,
-    required this.avatar,
-  });
+  const PostAuthorDto({required this.username, this.bio, required this.avatar});
 
   final String username;
   final String? bio;

@@ -1,11 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-enum PushServerEvent {
-  friendRequest,
-  friendAdded,
-  friendPost,
-  unknown,
-}
+enum PushServerEvent { friendRequest, friendAdded, friendPost, unknown }
 
 class ParsedPushMessage {
   const ParsedPushMessage({
@@ -38,9 +33,7 @@ class ParsedPushMessage {
   final String? authorUsername;
 
   static Map<String, String> _stringifyData(Map<String, dynamic> data) {
-    return data.map(
-      (k, v) => MapEntry(k, v == null ? '' : v.toString()),
-    );
+    return data.map((k, v) => MapEntry(k, v == null ? '' : v.toString()));
   }
 
   static ParsedPushMessage? tryParse(Map<String, dynamic> data) {

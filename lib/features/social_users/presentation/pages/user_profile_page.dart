@@ -56,10 +56,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     return switch (r) {
       ProfileRelationship.self => l10n.relationshipSelf,
       ProfileRelationship.friend => l10n.relationshipFriend,
-      ProfileRelationship.outgoingFriendRequest =>
-        l10n.relationshipOutgoingFR,
-      ProfileRelationship.incomingFriendRequest =>
-        l10n.relationshipIncomingFR,
+      ProfileRelationship.outgoingFriendRequest => l10n.relationshipOutgoingFR,
+      ProfileRelationship.incomingFriendRequest => l10n.relationshipIncomingFR,
       ProfileRelationship.following => l10n.relationshipFollowing,
       ProfileRelationship.none => l10n.relationshipNone,
       ProfileRelationship.unknown => l10n.relationshipNone,
@@ -192,17 +190,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
         final cubit = context.read<UserProfileCubit>();
         final fb = state.feedback;
         if (fb != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_feedbackText(l10n, fb))),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(_feedbackText(l10n, fb))));
           cubit.clearFeedback();
           return;
         }
         final err = state.errorMessage;
         if (err != null && err.isNotEmpty && state.profile != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_mapError(l10n, err))),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(_mapError(l10n, err))));
           cubit.clearError();
         }
       },
@@ -277,11 +275,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
                               children: [
                                 Text(
                                   profile.username,
-                                  style: Theme.of(context).textTheme.headlineSmall,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.headlineSmall,
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  _relationshipLabel(l10n, profile.relationship),
+                                  _relationshipLabel(
+                                    l10n,
+                                    profile.relationship,
+                                  ),
                                   style: Theme.of(context).textTheme.bodyMedium
                                       ?.copyWith(
                                         color: Theme.of(
@@ -312,8 +315,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         Text(profile.birthDate!),
                       ],
                       const SizedBox(height: 20),
-                      if (state.actionBusy)
-                        const LinearProgressIndicator(),
+                      if (state.actionBusy) const LinearProgressIndicator(),
                       const SizedBox(height: 8),
                       _buildActions(context, l10n, profile, state.actionBusy),
                       const SizedBox(height: 24),
@@ -328,9 +330,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           child: Center(child: Text(l10n.profileNoPosts)),
                         )
                       else
-                        ...profile.posts.map(
-                          (p) => ProfilePostTile(post: p),
-                        ),
+                        ...profile.posts.map((p) => ProfilePostTile(post: p)),
                       if (profile.posts.length < profile.postsTotal) ...[
                         const SizedBox(height: 8),
                         Center(

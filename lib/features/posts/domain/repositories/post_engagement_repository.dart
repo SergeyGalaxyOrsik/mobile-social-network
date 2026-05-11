@@ -3,17 +3,26 @@ import 'package:mobile_social_network/features/posts/domain/entities/post_entity
 
 /// Результат GET /posts/{postId}/comments.
 class CommentsListResult {
-  const CommentsListResult({
-    required this.items,
-    required this.total,
-  });
+  const CommentsListResult({required this.items, required this.total});
 
   final List<CommentEntity> items;
   final int total;
 }
 
+class RecordPostViewResult {
+  const RecordPostViewResult({
+    required this.recorded,
+    required this.distinctViewers,
+  });
+
+  final bool recorded;
+  final int distinctViewers;
+}
+
 /// Реакции и комментарии к постам (только сеть).
 abstract class PostEngagementRepository {
+  Future<RecordPostViewResult> recordPostView(String postId);
+
   Future<void> addPostReaction(String postId);
 
   Future<void> removePostReaction(String postId);

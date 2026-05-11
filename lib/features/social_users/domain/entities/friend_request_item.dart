@@ -11,6 +11,7 @@ class FriendRequestItem {
   final String peerUserId;
   final String peerUsername;
   final String createdAt;
+
   /// `true` — входящая заявка (вам отправили), `false` — исходящая.
   final bool incoming;
 }

@@ -23,9 +23,9 @@ class ConversationsPage extends StatelessWidget {
           listenWhen: (a, b) => a.lastError != b.lastError,
           listener: (context, state) {
             if (state.lastError != null && context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.lastError!)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(state.lastError!)));
               context.read<ConversationsCubit>().clearError();
             }
           },
@@ -121,10 +121,8 @@ class _ConversationTile extends StatelessWidget {
           conversation.lastActivityAt,
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        onTap: () => pushDirectChatPage(
-          context,
-          peerUserId: conversation.peerUserId,
-        ),
+        onTap: () =>
+            pushDirectChatPage(context, peerUserId: conversation.peerUserId),
       ),
     );
   }

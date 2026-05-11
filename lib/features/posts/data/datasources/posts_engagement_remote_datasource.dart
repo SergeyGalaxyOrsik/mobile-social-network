@@ -9,6 +9,17 @@ class PostsEngagementRemoteDataSource {
 
   final Dio _dio;
 
+  Future<RecordPostViewResponseDto> recordPostView(String postId) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/posts/$postId/views',
+      );
+      return RecordPostViewResponseDto.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
   Future<void> addPostReaction(String postId, CreatePostReactionDto dto) async {
     try {
       await _dio.post<void>('/posts/$postId/reactions', data: dto.toJson());
@@ -96,5 +107,23 @@ class PostsEngagementRemoteDataSource {
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
+  }
+}
+
+class RecordPostViewResponseDto {
+  const RecordPostViewResponseDto({
+    required this.recorded,
+    required this.distinctViewers,
+  });
+
+  final bool recorded;
+  final int distinctViewers;
+
+  factory RecordPostViewResponseDto.fromJson(Map<String, dynamic> json) {
+    final rawDistinct = json['distinct_viewers'];
+    return RecordPostViewResponseDto(
+      recorded: json['recorded'] as bool? ?? false,
+      distinctViewers: rawDistinct is num ? rawDistinct.toInt() : 0,
+    );
   }
 }

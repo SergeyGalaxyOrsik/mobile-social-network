@@ -44,12 +44,14 @@ class SocialUsersRemoteDataSource {
       params['username_prefix'] = prefix;
     }
     if (friendshipCreatedAfter != null) {
-      params['friendship_created_after'] =
-          friendshipCreatedAfter.toUtc().toIso8601String();
+      params['friendship_created_after'] = friendshipCreatedAfter
+          .toUtc()
+          .toIso8601String();
     }
     if (friendshipCreatedBefore != null) {
-      params['friendship_created_before'] =
-          friendshipCreatedBefore.toUtc().toIso8601String();
+      params['friendship_created_before'] = friendshipCreatedBefore
+          .toUtc()
+          .toIso8601String();
     }
     try {
       final response = await _dio.get<Map<String, dynamic>>(
@@ -137,9 +139,7 @@ class SocialUsersRemoteDataSource {
 
   Future<void> acceptFriendRequest(String requestId) async {
     try {
-      await _dio.post<void>(
-        '/users/me/friend-requests/$requestId/accept',
-      );
+      await _dio.post<void>('/users/me/friend-requests/$requestId/accept');
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
@@ -147,9 +147,7 @@ class SocialUsersRemoteDataSource {
 
   Future<void> declineFriendRequest(String requestId) async {
     try {
-      await _dio.post<void>(
-        '/users/me/friend-requests/$requestId/decline',
-      );
+      await _dio.post<void>('/users/me/friend-requests/$requestId/decline');
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
@@ -157,9 +155,7 @@ class SocialUsersRemoteDataSource {
 
   Future<void> cancelOutgoingFriendRequest(String requestId) async {
     try {
-      await _dio.delete<void>(
-        '/users/me/friend-requests/$requestId',
-      );
+      await _dio.delete<void>('/users/me/friend-requests/$requestId');
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }

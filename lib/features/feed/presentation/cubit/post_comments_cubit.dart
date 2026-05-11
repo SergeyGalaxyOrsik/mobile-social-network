@@ -12,9 +12,9 @@ class PostCommentsCubit extends Cubit<PostCommentsState> {
     required PostEngagementRepository engagement,
     required FeedCubit feedCubit,
     required this.currentUserId,
-  })  : _engagement = engagement,
-        _feedCubit = feedCubit,
-        super(const PostCommentsState());
+  }) : _engagement = engagement,
+       _feedCubit = feedCubit,
+       super(const PostCommentsState());
 
   final String postId;
   final String currentUserId;
@@ -24,12 +24,7 @@ class PostCommentsCubit extends Cubit<PostCommentsState> {
   static const _pageSize = 20;
 
   Future<void> loadInitial() async {
-    emit(
-      state.copyWith(
-        loadingInitial: true,
-        loadError: null,
-      ),
-    );
+    emit(state.copyWith(loadingInitial: true, loadError: null));
     try {
       final page = await _engagement.listComments(
         postId,
@@ -44,12 +39,7 @@ class PostCommentsCubit extends Cubit<PostCommentsState> {
         ),
       );
     } on ApiException catch (e) {
-      emit(
-        state.copyWith(
-          loadingInitial: false,
-          loadError: e.userMessage,
-        ),
-      );
+      emit(state.copyWith(loadingInitial: false, loadError: e.userMessage));
     }
   }
 
@@ -70,12 +60,7 @@ class PostCommentsCubit extends Cubit<PostCommentsState> {
         ),
       );
     } on ApiException catch (e) {
-      emit(
-        state.copyWith(
-          loadingMore: false,
-          lastActionError: e.userMessage,
-        ),
-      );
+      emit(state.copyWith(loadingMore: false, lastActionError: e.userMessage));
     }
   }
 
@@ -94,12 +79,7 @@ class PostCommentsCubit extends Cubit<PostCommentsState> {
         ),
       );
     } on ApiException catch (e) {
-      emit(
-        state.copyWith(
-          sending: false,
-          lastActionError: e.userMessage,
-        ),
-      );
+      emit(state.copyWith(sending: false, lastActionError: e.userMessage));
     }
   }
 
@@ -134,8 +114,7 @@ class PostCommentsCubit extends Cubit<PostCommentsState> {
   Future<void> toggleCommentLike(CommentEntity c) async {
     final idx = state.comments.indexWhere((x) => x.commentId == c.commentId);
     if (idx < 0) return;
-    final likedBefore =
-        _feedCubit.state.commentLikedByMe[c.commentId] ?? false;
+    final likedBefore = _feedCubit.state.commentLikedByMe[c.commentId] ?? false;
     final nextLiked = !likedBefore;
     final delta = nextLiked ? 1 : -1;
     final original = state.comments[idx];
@@ -156,12 +135,7 @@ class PostCommentsCubit extends Cubit<PostCommentsState> {
       final reverted = [...state.comments];
       reverted[idx] = original;
       _feedCubit.mergeCommentLiked(c.commentId, likedBefore);
-      emit(
-        state.copyWith(
-          comments: reverted,
-          lastActionError: e.userMessage,
-        ),
-      );
+      emit(state.copyWith(comments: reverted, lastActionError: e.userMessage));
     }
   }
 

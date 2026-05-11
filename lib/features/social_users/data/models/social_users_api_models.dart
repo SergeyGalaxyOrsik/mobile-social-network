@@ -55,7 +55,9 @@ class FriendListItemDto {
       userId: json['user_id'] as String,
       username: json['username'] as String,
       bio: json['bio'] as String?,
-      avatar: ProfileAvatarDto.fromJson(json['avatar'] as Map<String, dynamic>?),
+      avatar: ProfileAvatarDto.fromJson(
+        json['avatar'] as Map<String, dynamic>?,
+      ),
       friendshipCreatedAt: json['friendship_created_at'] as String,
     );
   }
@@ -82,10 +84,7 @@ class FriendsListResponseDto {
 enum FriendRequestOutcomeDto { pending, friends }
 
 class SendFriendRequestResponseDto {
-  const SendFriendRequestResponseDto({
-    required this.outcome,
-    this.requestId,
-  });
+  const SendFriendRequestResponseDto({required this.outcome, this.requestId});
 
   final FriendRequestOutcomeDto outcome;
   final String? requestId;
@@ -192,7 +191,9 @@ class ProfileResponseDto {
       username: json['username'] as String,
       bio: json['bio'] as String?,
       birthDate: json['birth_date'] as String?,
-      avatar: ProfileAvatarDto.fromJson(json['avatar'] as Map<String, dynamic>?),
+      avatar: ProfileAvatarDto.fromJson(
+        json['avatar'] as Map<String, dynamic>?,
+      ),
       relationship: json['relationship'] as String? ?? 'none',
       posts: rawPosts
           .map((e) => PostResponseDto.fromJson(e as Map<String, dynamic>))
@@ -203,10 +204,7 @@ class ProfileResponseDto {
 }
 
 class ReportUserRequestDto {
-  const ReportUserRequestDto({
-    required this.reasonCode,
-    this.details,
-  });
+  const ReportUserRequestDto({required this.reasonCode, this.details});
 
   final String reasonCode;
   final String? details;
@@ -223,8 +221,6 @@ class ReportUserResponseDto {
   final String reportId;
 
   factory ReportUserResponseDto.fromJson(Map<String, dynamic> json) {
-    return ReportUserResponseDto(
-      reportId: json['report_id'] as String,
-    );
+    return ReportUserResponseDto(reportId: json['report_id'] as String);
   }
 }

@@ -24,6 +24,11 @@ abstract class ChatRepository {
 
   Future<void> deleteMessage(String messageId);
 
+  Future<void> markMessageRead({
+    required String messageId,
+    required String peerUserId,
+  });
+
   Future<List<DirectBlock>> fetchBlocks();
 
   Future<void> blockUser(String blockedUserId);

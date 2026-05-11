@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 class DirectChatRouteArgs {
-  const DirectChatRouteArgs({
-    required this.peerUserId,
-    this.peerDisplayName,
-  });
+  const DirectChatRouteArgs({required this.peerUserId, this.peerDisplayName});
 
   final String peerUserId;
   final String? peerDisplayName;

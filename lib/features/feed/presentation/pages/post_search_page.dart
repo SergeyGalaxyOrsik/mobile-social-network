@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:mobile_social_network/core/share/post_share_helper.dart';
-import 'package:mobile_social_network/core/utils/user_avatar.dart' show buildUserAvatarImage;
+import 'package:mobile_social_network/core/utils/user_avatar.dart'
+    show buildUserAvatarImage;
 import 'package:mobile_social_network/features/feed/presentation/cubit/post_search_cubit.dart';
 import 'package:mobile_social_network/features/feed/presentation/cubit/post_search_state.dart';
-import 'package:mobile_social_network/features/feed/presentation/pages/feed_page.dart' show openPostCommentsSheet;
+import 'package:mobile_social_network/features/feed/presentation/pages/feed_page.dart'
+    show openPostCommentsSheet;
 import 'package:mobile_social_network/features/posts/domain/entities/post_entity.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/post_search_sort.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/post_visibility.dart';
@@ -49,19 +51,20 @@ class _PostSearchPageState extends State<PostSearchPage> {
       appBar: AppBar(title: Text(l10n.postSearchTitle)),
       body: BlocConsumer<PostSearchCubit, PostSearchState>(
         listenWhen: (a, b) =>
-            a.lastError != b.lastError || a.engagementError != b.engagementError,
+            a.lastError != b.lastError ||
+            a.engagementError != b.engagementError,
         listener: (context, state) {
           if (state.lastError != null && context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.lastError!)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.lastError!)));
             context.read<PostSearchCubit>().clearError();
           }
           final e = state.engagementError;
           if (e != null && context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(e)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(e)));
             context.read<PostSearchCubit>().clearEngagementError();
           }
         },
@@ -207,8 +210,11 @@ class _PostSearchPageState extends State<PostSearchPage> {
                         : ListView.separated(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                             physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: state.items.length + (state.canLoadMore ? 1 : 0),
-                            separatorBuilder: (_, __) => const SizedBox(height: 12),
+                            itemCount:
+                                state.items.length +
+                                (state.canLoadMore ? 1 : 0),
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 12),
                             itemBuilder: (context, i) {
                               if (i == state.items.length) {
                                 return Center(
@@ -219,7 +225,9 @@ class _PostSearchPageState extends State<PostSearchPage> {
                                         : TextButton(
                                             onPressed: () =>
                                                 cubit.load(reset: false),
-                                            child: Text(l10n.friendsListLoadMore),
+                                            child: Text(
+                                              l10n.friendsListLoadMore,
+                                            ),
                                           ),
                                   ),
                                 );
@@ -321,9 +329,7 @@ class _PostSearchResultTile extends StatelessWidget {
               onPressed: onToggleLike,
               icon: Icon(
                 liked ? Icons.favorite : Icons.favorite_border,
-                color: liked
-                    ? Theme.of(context).colorScheme.error
-                    : null,
+                color: liked ? Theme.of(context).colorScheme.error : null,
               ),
             ),
             Text('${post.likesCount}'),

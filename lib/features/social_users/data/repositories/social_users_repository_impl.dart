@@ -57,7 +57,11 @@ class SocialUsersRepositoryImpl implements SocialUsersRepository {
     int? limit,
     int? offset,
   }) async {
-    final dto = await _remote.searchUsers(q: query, limit: limit, offset: offset);
+    final dto = await _remote.searchUsers(
+      q: query,
+      limit: limit,
+      offset: offset,
+    );
     return dto.items
         .map(
           (e) => UserSearchResult(
@@ -79,11 +83,12 @@ class SocialUsersRepositoryImpl implements SocialUsersRepository {
   }
 
   @override
-  Future<({List<FriendRequestItem> items, int total})> getIncomingFriendRequests({
-    int? limit,
-    int? offset,
-  }) async {
-    final dto = await _remote.getIncomingFriendRequests(limit: limit, offset: offset);
+  Future<({List<FriendRequestItem> items, int total})>
+  getIncomingFriendRequests({int? limit, int? offset}) async {
+    final dto = await _remote.getIncomingFriendRequests(
+      limit: limit,
+      offset: offset,
+    );
     return (
       items: dto.items
           .map(
@@ -101,11 +106,12 @@ class SocialUsersRepositoryImpl implements SocialUsersRepository {
   }
 
   @override
-  Future<({List<FriendRequestItem> items, int total})> getOutgoingFriendRequests({
-    int? limit,
-    int? offset,
-  }) async {
-    final dto = await _remote.getOutgoingFriendRequests(limit: limit, offset: offset);
+  Future<({List<FriendRequestItem> items, int total})>
+  getOutgoingFriendRequests({int? limit, int? offset}) async {
+    final dto = await _remote.getOutgoingFriendRequests(
+      limit: limit,
+      offset: offset,
+    );
     return (
       items: dto.items
           .map(

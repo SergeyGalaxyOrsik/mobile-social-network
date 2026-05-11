@@ -29,6 +29,7 @@ class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
   int _friendsTabIndex = 0;
   String? _incomingRequestHighlightId;
+
   /// Контекст под [MultiBlocProvider] (доступ к [FriendRequestsCubit]).
   BuildContext? _friendsScopedContext;
 
@@ -144,14 +145,10 @@ class _MainPageState extends State<MainPage> {
     return MultiBlocProvider(
       providers: [
         BlocProvider<FriendRequestsCubit>(
-          create: (c) => FriendRequestsCubit(
-            c.read<SocialUsersRepository>(),
-          ),
+          create: (c) => FriendRequestsCubit(c.read<SocialUsersRepository>()),
         ),
         BlocProvider<FriendsListCubit>(
-          create: (c) => FriendsListCubit(
-            c.read<SocialUsersRepository>(),
-          ),
+          create: (c) => FriendsListCubit(c.read<SocialUsersRepository>()),
         ),
         BlocProvider<UserSearchCubit>(
           create: (c) => UserSearchCubit(c.read<SocialUsersRepository>()),
@@ -194,14 +191,14 @@ class _MainPageState extends State<MainPage> {
               right: false,
               child: Container(
                 decoration: BoxDecoration(
-                  border: Border(top: BorderSide(color: Colors.black, width: 1)),
+                  border: Border(
+                    top: BorderSide(color: Colors.black, width: 1),
+                  ),
                 ),
                 padding: const EdgeInsets.only(top: 8),
                 child: Theme(
                   data: Theme.of(scopedContext).copyWith(
-                    colorScheme: Theme.of(
-                      scopedContext,
-                    ).colorScheme.copyWith(
+                    colorScheme: Theme.of(scopedContext).colorScheme.copyWith(
                       surface: _navBarSurfaceColor(scopedContext),
                     ),
                     splashColor: Colors.transparent,
@@ -229,7 +226,8 @@ class _MainPageState extends State<MainPage> {
                     backgroundColor: _navBarSurfaceColor(scopedContext),
                     surfaceTintColor: Colors.transparent,
                     elevation: 0,
-                    labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+                    labelBehavior:
+                        NavigationDestinationLabelBehavior.alwaysShow,
                     destinations: [
                       NavigationDestination(
                         icon: Icon(

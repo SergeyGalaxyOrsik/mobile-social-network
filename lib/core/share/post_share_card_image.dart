@@ -120,7 +120,8 @@ final class PostShareCardImageBuilder {
       }
 
       double totalForImageH(double imgH) {
-        var t = _pad +
+        var t =
+            _pad +
             authorPainter.height +
             18 +
             datePainter.height +
@@ -146,8 +147,9 @@ final class PostShareCardImageBuilder {
         imageDrawH = h;
       }
 
-      final heightI =
-          totalForImageH(imageDrawH).ceil().clamp(720, _maxHeight.round());
+      final heightI = totalForImageH(
+        imageDrawH,
+      ).ceil().clamp(720, _maxHeight.round());
 
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(recorder);
@@ -208,8 +210,7 @@ final class PostShareCardImageBuilder {
       final picture = recorder.endRecording();
       final image = await picture.toImage(_width.round(), heightI);
       try {
-        final byteData =
-            await image.toByteData(format: ui.ImageByteFormat.png);
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
         if (byteData == null) return null;
         final bytes = byteData.buffer.asUint8List(
           byteData.offsetInBytes,
@@ -229,10 +230,7 @@ final class PostShareCardImageBuilder {
   }
 
   static Future<ui.Image?> _decodeImage(Uint8List bytes) async {
-    final codec = await ui.instantiateImageCodec(
-      bytes,
-      targetWidth: 2048,
-    );
+    final codec = await ui.instantiateImageCodec(bytes, targetWidth: 2048);
     final frame = await codec.getNextFrame();
     return frame.image;
   }

@@ -43,6 +43,19 @@ class PostLocalRepositoryImpl implements PostRepository {
     int? limit,
     int? offset,
   }) {
-    throw UnsupportedError('searchPosts is only available via PostRepositoryImpl');
+    throw UnsupportedError(
+      'searchPosts is only available via PostRepositoryImpl',
+    );
+  }
+
+  @override
+  Future<({List<PostEntity> items, int total})> getPostsByHashtag(
+    String hashtag, {
+    int? limit,
+    int? offset,
+  }) {
+    throw UnsupportedError(
+      'getPostsByHashtag is only available via PostRepositoryImpl',
+    );
   }
 }

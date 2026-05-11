@@ -18,7 +18,11 @@ import 'package:mobile_social_network/features/posts/domain/entities/post_entity
 import 'package:mobile_social_network/features/posts/domain/entities/post_media_item.dart';
 import 'package:mobile_social_network/features/posts/domain/repositories/post_repository.dart';
 import 'package:mobile_social_network/features/posts/presentation/pages/edit_post_page.dart';
+import 'package:mobile_social_network/features/reports/domain/entities/report_target_type.dart';
+import 'package:mobile_social_network/features/reports/domain/repositories/reports_repository.dart';
+import 'package:mobile_social_network/features/saved_posts/domain/repositories/saved_posts_repository.dart';
 import 'package:mobile_social_network/features/social_users/presentation/pages/user_profile_page.dart';
+import 'package:mobile_social_network/features/social_users/domain/entities/report_reason_code.dart';
 import 'package:mobile_social_network/l10n/app_localizations.dart';
 
 class FeedPage extends StatefulWidget {
@@ -49,7 +53,9 @@ class _FeedPageState extends State<FeedPage> {
       listener: (context, state) {
         final msg = state.lastPublishError;
         if (msg != null && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(msg)));
           context.read<FeedCubit>().clearPublishError();
         }
       },
@@ -60,7 +66,9 @@ class _FeedPageState extends State<FeedPage> {
         listener: (context, state) {
           final msg = state.lastEngagementError;
           if (msg != null && context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(msg)));
             context.read<FeedCubit>().clearEngagementError();
           }
         },
@@ -72,12 +80,14 @@ class _FeedPageState extends State<FeedPage> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: IconButton(
-                    tooltip: AppLocalizations.of(context)!.feedSearchPostsTooltip,
+                    tooltip: AppLocalizations.of(
+                      context,
+                    )!.feedSearchPostsTooltip,
                     icon: const Icon(Icons.search),
                     onPressed: () {
                       final postRepo = context.read<PostRepository>();
-                      final engagement =
-                          context.read<PostEngagementRepository>();
+                      final engagement = context
+                          .read<PostEngagementRepository>();
                       Navigator.of(context).push<void>(
                         MaterialPageRoute<void>(
                           builder: (_) => BlocProvider<PostSearchCubit>(
@@ -113,10 +123,14 @@ class _FeedPageState extends State<FeedPage> {
                                 ? authState.user.id
                                 : null;
                             final postId = post.postId;
+                            if (postId != null) {
+                              context.read<FeedCubit>().recordPostView(postId);
+                            }
                             return _PostCard(
                               post: post,
                               author: author,
-                              isOwnPost: currentUserId != null &&
+                              isOwnPost:
+                                  currentUserId != null &&
                                   post.userId == currentUserId,
                               resolveImagePath: _resolveImagePath,
                               postLiked: postId != null
@@ -124,11 +138,27 @@ class _FeedPageState extends State<FeedPage> {
                                   : false,
                               onToggleLike: postId != null
                                   ? () => context
-                                      .read<FeedCubit>()
-                                      .togglePostLike(postId)
+                                        .read<FeedCubit>()
+                                        .togglePostLike(postId)
                                   : null,
                               onOpenComments: postId != null
                                   ? () => openPostCommentsSheet(context, post)
+                                  : null,
+                              onSavePost: postId != null
+                                  ? () async {
+                                      await context
+                                          .read<SavedPostsRepository>()
+                                          .save(postId);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Post saved'),
+                                          ),
+                                        );
+                                      }
+                                    }
                                   : null,
                             );
                           },
@@ -159,11 +189,85 @@ void openPostCommentsSheet(BuildContext context, PostEntity post) {
 Future<String?> _resolveImagePath(String? relativePath) =>
     resolvePostLocalMediaPath(relativePath);
 
+String _reportReasonLabel(AppLocalizations l10n, ReportReasonCode reason) {
+  return switch (reason) {
+    ReportReasonCode.spam => l10n.reportReasonSpam,
+    ReportReasonCode.harassment => l10n.reportReasonHarassment,
+    ReportReasonCode.hate => l10n.reportReasonHate,
+    ReportReasonCode.impersonation => l10n.reportReasonImpersonation,
+    ReportReasonCode.nudity => l10n.reportReasonNudity,
+    ReportReasonCode.scam => l10n.reportReasonScam,
+    ReportReasonCode.other => l10n.reportReasonOther,
+  };
+}
+
+Future<void> _reportPost(BuildContext context, PostEntity post) async {
+  final postId = post.postId;
+  if (postId == null || postId.isEmpty) return;
+  final l10n = AppLocalizations.of(context)!;
+  final detailsController = TextEditingController();
+  var selected = ReportReasonCode.spam;
+  final submitted = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) => AlertDialog(
+        title: Text(l10n.reportUserSheetTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<ReportReasonCode>(
+              initialValue: selected,
+              items: ReportReasonCode.values
+                  .map(
+                    (reason) => DropdownMenuItem<ReportReasonCode>(
+                      value: reason,
+                      child: Text(_reportReasonLabel(l10n, reason)),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => selected = value);
+                }
+              },
+            ),
+            TextField(
+              controller: detailsController,
+              maxLines: 3,
+              decoration: InputDecoration(labelText: l10n.reportDetailsLabel),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.reportSubmit),
+          ),
+        ],
+      ),
+    ),
+  );
+  final details = detailsController.text.trim();
+  detailsController.dispose();
+  if (submitted != true || !context.mounted) return;
+  await context.read<ReportsRepository>().createReport(
+    targetType: ReportTargetType.post,
+    targetId: postId,
+    reason: selected,
+    details: details.isEmpty ? null : details,
+  );
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(
+    context,
+  ).showSnackBar(SnackBar(content: Text(l10n.snackReportSubmitted)));
+}
+
 class _PostMediaBlock extends StatelessWidget {
-  const _PostMediaBlock({
-    required this.media,
-    required this.resolveImagePath,
-  });
+  const _PostMediaBlock({required this.media, required this.resolveImagePath});
 
   final PostMediaItem media;
   final Future<String?> Function(String?) resolveImagePath;
@@ -183,9 +287,8 @@ class _PostMediaBlock extends StatelessWidget {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
-                        builder: (context) => _FullScreenPhotoPage(
-                          imagePath: snapshot.data!,
-                        ),
+                        builder: (context) =>
+                            _FullScreenPhotoPage(imagePath: snapshot.data!),
                       ),
                     );
                   },
@@ -260,7 +363,7 @@ Widget _networkImageTile(BuildContext context, String url) {
               child: CircularProgressIndicator(
                 value: loadingProgress.expectedTotalBytes != null
                     ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
+                          loadingProgress.expectedTotalBytes!
                     : null,
               ),
             ),
@@ -318,10 +421,7 @@ class _FullScreenNetworkPhotoPage extends StatelessWidget {
 }
 
 class _PublishingBar extends StatelessWidget {
-  const _PublishingBar({
-    required this.taskCount,
-    required this.progress,
-  });
+  const _PublishingBar({required this.taskCount, required this.progress});
 
   final int taskCount;
   final double progress;
@@ -347,9 +447,7 @@ class _PublishingBar extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                taskCount <= 1
-                    ? 'Publishing…'
-                    : 'Publishing ($taskCount)…',
+                taskCount <= 1 ? 'Publishing…' : 'Publishing ($taskCount)…',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],
@@ -369,6 +467,7 @@ class _PostCard extends StatelessWidget {
     required this.postLiked,
     this.onToggleLike,
     this.onOpenComments,
+    this.onSavePost,
   });
 
   final PostEntity post;
@@ -378,6 +477,7 @@ class _PostCard extends StatelessWidget {
   final bool postLiked;
   final VoidCallback? onToggleLike;
   final VoidCallback? onOpenComments;
+  final Future<void> Function()? onSavePost;
 
   @override
   Widget build(BuildContext context) {
@@ -451,7 +551,10 @@ class _PostCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                Text(post.content, style: Theme.of(context).textTheme.bodyLarge),
+                Text(
+                  post.content,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
 
                 if (post.media != null && post.media!.isNotEmpty) ...[
                   const SizedBox(height: 8),
@@ -543,8 +646,8 @@ class _PostCard extends StatelessWidget {
                         resolveImagePath: resolveImagePath,
                         shareAuthorLabel: author != null
                             ? (author!.username?.isNotEmpty == true
-                                ? author!.username
-                                : author!.email)
+                                  ? author!.username
+                                  : author!.email)
                             : post.author?.username,
                       ),
                       icon: Icon(
@@ -552,6 +655,15 @@ class _PostCard extends StatelessWidget {
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
+                    if (onSavePost != null)
+                      IconButton(
+                        tooltip: 'Save post',
+                        onPressed: () => onSavePost?.call(),
+                        icon: Icon(
+                          Icons.bookmark_add_outlined,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                   ],
                 ),
               ],
@@ -597,9 +709,9 @@ class _PostCard extends StatelessWidget {
                       if (confirmed == true &&
                           post.localId != null &&
                           context.mounted) {
-                        await context
-                            .read<PostRepository>()
-                            .deletePost(post.localId!);
+                        await context.read<PostRepository>().deletePost(
+                          post.localId!,
+                        );
                         if (context.mounted) {
                           context.read<FeedCubit>().loadNotes();
                         }
@@ -638,7 +750,34 @@ class _PostCard extends StatelessWidget {
                   ],
                 ),
               ),
-
+            if (!isOwnPost && post.postId != null)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  onSelected: (value) {
+                    if (value == 'report') {
+                      _reportPost(context, post);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'report',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.flag_outlined),
+                          const SizedBox(width: 8),
+                          Text(l10n.reportUserAction),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),

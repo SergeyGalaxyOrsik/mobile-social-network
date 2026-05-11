@@ -2,6 +2,7 @@
 class UserEntity {
   final String id;
   final String email;
+
   /// Публичное имя (OpenAPI: username). В БД колонка по-прежнему `displayName`.
   final String? username;
   final String? password;

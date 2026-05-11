@@ -12,9 +12,9 @@ class PostSearchCubit extends Cubit<PostSearchState> {
   PostSearchCubit({
     required PostRepository postRepository,
     required PostEngagementRepository postEngagement,
-  })  : _postRepository = postRepository,
-        _postEngagement = postEngagement,
-        super(const PostSearchState());
+  }) : _postRepository = postRepository,
+       _postEngagement = postEngagement,
+       super(const PostSearchState());
 
   final PostRepository _postRepository;
   final PostEngagementRepository _postEngagement;
@@ -36,9 +36,7 @@ class PostSearchCubit extends Cubit<PostSearchState> {
       if (!state.canLoadMore || state.loadingMore) {
         return;
       }
-      emit(
-        state.copyWith(loadingMore: true, clearError: true),
-      );
+      emit(state.copyWith(loadingMore: true, clearError: true));
     }
     final offset = reset ? 0 : state.items.length;
     final q = state.query.trim();
@@ -52,14 +50,8 @@ class PostSearchCubit extends Cubit<PostSearchState> {
         limit: _pageSize,
         offset: offset,
       );
-      final nextItems = reset
-          ? page.items
-          : [...state.items, ...page.items];
-      final likeMap = _mergeLikes(
-        state.postLikedByMe,
-        nextItems,
-        reset: reset,
-      );
+      final nextItems = reset ? page.items : [...state.items, ...page.items];
+      final likeMap = _mergeLikes(state.postLikedByMe, nextItems, reset: reset);
       emit(
         state.copyWith(
           items: nextItems,
@@ -157,11 +149,7 @@ class PostSearchCubit extends Cubit<PostSearchState> {
   }
 
   void setSort(PostSearchSort? v) {
-    emit(
-      v == null
-          ? state.copyWith(clearSort: true)
-          : state.copyWith(sort: v),
-    );
+    emit(v == null ? state.copyWith(clearSort: true) : state.copyWith(sort: v));
   }
 
   void setAuthorUserId(String v) {

@@ -16,12 +16,8 @@ void pushFriendRequestsPage(BuildContext context) {
           BlocProvider<FriendRequestsCubit>(
             create: (_) => FriendRequestsCubit(repo),
           ),
-          BlocProvider<FriendsListCubit>(
-            create: (_) => FriendsListCubit(repo),
-          ),
-          BlocProvider<UserSearchCubit>(
-            create: (_) => UserSearchCubit(repo),
-          ),
+          BlocProvider<FriendsListCubit>(create: (_) => FriendsListCubit(repo)),
+          BlocProvider<UserSearchCubit>(create: (_) => UserSearchCubit(repo)),
         ],
         child: const FriendsTabPage(),
       ),

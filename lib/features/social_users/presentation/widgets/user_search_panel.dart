@@ -59,9 +59,9 @@ class _UserSearchPanelState extends State<UserSearchPanel> {
               listener: (context, state) {
                 final err = state.errorMessage;
                 if (err != null && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(err)),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(err)));
                   context.read<UserSearchCubit>().clearError();
                 }
               },

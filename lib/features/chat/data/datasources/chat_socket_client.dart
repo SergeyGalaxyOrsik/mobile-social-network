@@ -27,7 +27,9 @@ bool _looksLikeErrorMap(Map<String, dynamic> m) {
   if (m.containsKey('message_id')) return false;
   final inner = m['message'];
   if (inner is Map && inner['message_id'] != null) return false;
-  if (m.containsKey('conversation_id') && m['message_id'] == null && inner == null) {
+  if (m.containsKey('conversation_id') &&
+      m['message_id'] == null &&
+      inner == null) {
     return false;
   }
   final code = m['code'];
@@ -42,18 +44,14 @@ bool _looksLikeErrorMap(Map<String, dynamic> m) {
 
 /// Socket.IO client
 class ChatSocketClient {
-  ChatSocketClient({
-    required this.socketUri,
-    required this.accessToken,
-  });
+  ChatSocketClient({required this.socketUri, required this.accessToken});
 
   final String socketUri;
   final String? Function() accessToken;
 
   io.Socket? _socket;
   final _incoming = StreamController<DirectMessage>.broadcast();
-  final _incomingDeletions =
-      StreamController<DirectMessageDeleted>.broadcast();
+  final _incomingDeletions = StreamController<DirectMessageDeleted>.broadcast();
 
   Stream<DirectMessage> get incomingMessages => _incoming.stream;
 

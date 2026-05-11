@@ -37,6 +37,29 @@ class PostsRemoteDataSource {
     }
   }
 
+  Future<FeedResponseDto> getPostsByHashtag(
+    String hashtag, {
+    int? limit,
+    int? offset,
+  }) async {
+    final normalized = hashtag.trim().replaceFirst(RegExp(r'^#+'), '');
+    if (normalized.isEmpty) {
+      throw ArgumentError.value(hashtag, 'hashtag', 'must not be empty');
+    }
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/posts/hashtag/${Uri.encodeComponent(normalized)}',
+        queryParameters: <String, dynamic>{
+          'limit': _clampFeedLimit(limit),
+          'offset': _clampFeedOffset(offset),
+        },
+      );
+      return FeedResponseDto.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
   /// Поиск постов: нечёткое/подстроковое совпадение по `content`, фильтры, сортировка.
   Future<FeedResponseDto> searchPosts({
     String? q,

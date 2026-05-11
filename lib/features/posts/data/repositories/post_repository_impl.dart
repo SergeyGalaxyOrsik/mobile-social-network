@@ -91,4 +91,19 @@ class PostRepositoryImpl implements PostRepository {
     final list = feed.items.map((dto) => dto.toEntity()).toList();
     return (items: list, total: feed.total.toInt());
   }
+
+  @override
+  Future<({List<PostEntity> items, int total})> getPostsByHashtag(
+    String hashtag, {
+    int? limit,
+    int? offset,
+  }) async {
+    final feed = await _remote.getPostsByHashtag(
+      hashtag,
+      limit: limit,
+      offset: offset,
+    );
+    final list = feed.items.map((dto) => dto.toEntity()).toList();
+    return (items: list, total: feed.total.toInt());
+  }
 }

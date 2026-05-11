@@ -17,4 +17,10 @@ abstract class PostRepository {
     int? limit,
     int? offset,
   });
+
+  Future<({List<PostEntity> items, int total})> getPostsByHashtag(
+    String hashtag, {
+    int? limit,
+    int? offset,
+  });
 }

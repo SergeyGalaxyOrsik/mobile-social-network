@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:mobile_social_network/core/utils/user_avatar.dart' show buildUserAvatarImage;
+import 'package:mobile_social_network/core/utils/user_avatar.dart'
+    show buildUserAvatarImage;
 import 'package:mobile_social_network/features/social_users/domain/entities/friends_list_sort.dart';
 import 'package:mobile_social_network/features/social_users/presentation/cubit/friends_list_cubit.dart';
 import 'package:mobile_social_network/features/chat/presentation/chat_navigation.dart';
@@ -46,9 +47,9 @@ class _FriendsListPanelState extends State<FriendsListPanel> {
       listenWhen: (a, b) => a.lastError != b.lastError,
       listener: (context, state) {
         if (state.lastError != null && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.lastError!)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.lastError!)));
           context.read<FriendsListCubit>().clearError();
         }
       },
@@ -59,6 +60,7 @@ class _FriendsListPanelState extends State<FriendsListPanel> {
           cubit.setUsernamePrefix(_prefixController.text);
           cubit.load();
         }
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -109,8 +111,8 @@ class _FriendsListPanelState extends State<FriendsListPanel> {
                           : () async {
                               final d = await showDatePicker(
                                 context: context,
-                                initialDate: state.friendshipAfter ??
-                                    DateTime.now(),
+                                initialDate:
+                                    state.friendshipAfter ?? DateTime.now(),
                                 firstDate: DateTime(2000),
                                 lastDate: DateTime.now().add(
                                   const Duration(days: 365),
@@ -123,10 +125,9 @@ class _FriendsListPanelState extends State<FriendsListPanel> {
                       child: Text(
                         state.friendshipAfter == null
                             ? l10n.friendsListFriendshipAfter
-                            : MaterialLocalizations.of(context)
-                                .formatFullDate(
-                                  state.friendshipAfter!,
-                                ),
+                            : MaterialLocalizations.of(
+                                context,
+                              ).formatFullDate(state.friendshipAfter!),
                       ),
                     ),
                   ),
@@ -138,8 +139,8 @@ class _FriendsListPanelState extends State<FriendsListPanel> {
                           : () async {
                               final d = await showDatePicker(
                                 context: context,
-                                initialDate: state.friendshipBefore ??
-                                    DateTime.now(),
+                                initialDate:
+                                    state.friendshipBefore ?? DateTime.now(),
                                 firstDate: DateTime(2000),
                                 lastDate: DateTime.now().add(
                                   const Duration(days: 365),
@@ -152,10 +153,9 @@ class _FriendsListPanelState extends State<FriendsListPanel> {
                       child: Text(
                         state.friendshipBefore == null
                             ? l10n.friendsListFriendshipBefore
-                            : MaterialLocalizations.of(context)
-                                .formatFullDate(
-                                  state.friendshipBefore!,
-                                ),
+                            : MaterialLocalizations.of(
+                                context,
+                              ).formatFullDate(state.friendshipBefore!),
                       ),
                     ),
                   ),
@@ -215,9 +215,7 @@ class _FriendsListPanelState extends State<FriendsListPanel> {
               child: Row(
                 children: [
                   FilledButton(
-                    onPressed: state.loading
-                        ? null
-                        : applyFromFields,
+                    onPressed: state.loading ? null : applyFromFields,
                     child: Text(l10n.friendsListApply),
                   ),
                   const SizedBox(width: 8),
@@ -236,9 +234,7 @@ class _FriendsListPanelState extends State<FriendsListPanel> {
               ),
             ),
             if (state.loading && state.items.isEmpty)
-              const Expanded(
-                child: Center(child: CircularProgressIndicator()),
-              )
+              const Expanded(child: Center(child: CircularProgressIndicator()))
             else
               Expanded(
                 child: RefreshIndicator(
@@ -254,8 +250,10 @@ class _FriendsListPanelState extends State<FriendsListPanel> {
                       : ListView.separated(
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                          itemCount: state.items.length + (state.canLoadMore ? 1 : 0),
-                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemCount:
+                              state.items.length + (state.canLoadMore ? 1 : 0),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 8),
                           itemBuilder: (context, i) {
                             if (i == state.items.length) {
                               return Center(
@@ -264,9 +262,8 @@ class _FriendsListPanelState extends State<FriendsListPanel> {
                                   child: state.loadingMore
                                       ? const CircularProgressIndicator()
                                       : TextButton(
-                                          onPressed: () => cubit.load(
-                                            reset: false,
-                                          ),
+                                          onPressed: () =>
+                                              cubit.load(reset: false),
                                           child: Text(l10n.friendsListLoadMore),
                                         ),
                                 ),
@@ -312,17 +309,15 @@ class _FriendsListPanelState extends State<FriendsListPanel> {
                                           .textTheme
                                           .bodySmall
                                           ?.copyWith(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurfaceVariant,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
                                           ),
                                     ),
                                   ],
                                 ),
-                                onTap: () => pushUserProfilePage(
-                                  context,
-                                  f.userId,
-                                ),
+                                onTap: () =>
+                                    pushUserProfilePage(context, f.userId),
                               ),
                             );
                           },

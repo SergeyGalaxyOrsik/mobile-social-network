@@ -22,13 +22,7 @@ class UserSearchCubit extends Cubit<UserSearchState> {
     _debounce?.cancel();
     final trimmed = raw.trim();
     if (trimmed.isEmpty) {
-      emit(
-        state.copyWith(
-          results: const [],
-          loading: false,
-          clearError: true,
-        ),
-      );
+      emit(state.copyWith(results: const [], loading: false, clearError: true));
       return;
     }
     if (trimmed.length > 100) {
@@ -49,19 +43,9 @@ class UserSearchCubit extends Cubit<UserSearchState> {
       final list = await _repository.searchUsers(query: query);
       emit(state.copyWith(results: list, loading: false, clearError: true));
     } on ApiException catch (e) {
-      emit(
-        state.copyWith(
-          loading: false,
-          errorMessage: e.userMessage,
-        ),
-      );
+      emit(state.copyWith(loading: false, errorMessage: e.userMessage));
     } catch (e) {
-      emit(
-        state.copyWith(
-          loading: false,
-          errorMessage: e.toString(),
-        ),
-      );
+      emit(state.copyWith(loading: false, errorMessage: e.toString()));
     }
   }
 }

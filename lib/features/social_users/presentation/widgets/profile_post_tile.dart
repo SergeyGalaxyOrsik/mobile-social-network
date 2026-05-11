@@ -16,17 +16,15 @@ class ProfilePostTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: Border.fromBorderSide(border),
-      ),
+      decoration: BoxDecoration(border: Border.fromBorderSide(border)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             post.createdAt,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
           ),
           const SizedBox(height: 6),
           Text(post.content, style: Theme.of(context).textTheme.bodyLarge),

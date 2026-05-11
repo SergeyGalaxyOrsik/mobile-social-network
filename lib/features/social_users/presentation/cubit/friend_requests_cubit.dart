@@ -53,19 +53,9 @@ class FriendRequestsCubit extends Cubit<FriendRequestsState> {
       await _repository.acceptFriendRequest(requestId);
       await load();
     } on ApiException catch (e) {
-      emit(
-        state.copyWith(
-          clearProcessing: true,
-          lastError: e.userMessage,
-        ),
-      );
+      emit(state.copyWith(clearProcessing: true, lastError: e.userMessage));
     } catch (e) {
-      emit(
-        state.copyWith(
-          clearProcessing: true,
-          lastError: e.toString(),
-        ),
-      );
+      emit(state.copyWith(clearProcessing: true, lastError: e.toString()));
     }
   }
 
@@ -75,19 +65,9 @@ class FriendRequestsCubit extends Cubit<FriendRequestsState> {
       await _repository.declineFriendRequest(requestId);
       await load();
     } on ApiException catch (e) {
-      emit(
-        state.copyWith(
-          clearProcessing: true,
-          lastError: e.userMessage,
-        ),
-      );
+      emit(state.copyWith(clearProcessing: true, lastError: e.userMessage));
     } catch (e) {
-      emit(
-        state.copyWith(
-          clearProcessing: true,
-          lastError: e.toString(),
-        ),
-      );
+      emit(state.copyWith(clearProcessing: true, lastError: e.toString()));
     }
   }
 
@@ -97,19 +77,9 @@ class FriendRequestsCubit extends Cubit<FriendRequestsState> {
       await _repository.cancelOutgoingFriendRequest(requestId);
       await load();
     } on ApiException catch (e) {
-      emit(
-        state.copyWith(
-          clearProcessing: true,
-          lastError: e.userMessage,
-        ),
-      );
+      emit(state.copyWith(clearProcessing: true, lastError: e.userMessage));
     } catch (e) {
-      emit(
-        state.copyWith(
-          clearProcessing: true,
-          lastError: e.toString(),
-        ),
-      );
+      emit(state.copyWith(clearProcessing: true, lastError: e.toString()));
     }
   }
 }

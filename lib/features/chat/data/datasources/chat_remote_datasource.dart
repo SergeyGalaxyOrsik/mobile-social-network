@@ -110,6 +110,20 @@ class ChatRemoteDataSource {
     }
   }
 
+  Future<void> markMessageRead({
+    required String messageId,
+    required String peerUserId,
+  }) async {
+    try {
+      await _dio.post<void>(
+        '/chat/direct/messages/$messageId/read',
+        queryParameters: <String, dynamic>{'peer_user_id': peerUserId},
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
   Future<DirectBlocksResponseDto> listBlocks() async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(

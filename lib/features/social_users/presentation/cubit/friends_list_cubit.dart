@@ -15,12 +15,7 @@ class FriendsListCubit extends Cubit<FriendsListState> {
   Future<void> load({bool reset = true}) async {
     if (reset) {
       emit(
-        state.copyWith(
-          loading: true,
-          clearError: true,
-          items: [],
-          total: 0,
-        ),
+        state.copyWith(loading: true, clearError: true, items: [], total: 0),
       );
     } else {
       if (!state.canLoadMore || state.loadingMore) {
@@ -39,9 +34,7 @@ class FriendsListCubit extends Cubit<FriendsListState> {
         limit: _pageSize,
         offset: offset,
       );
-      final nextItems = reset
-          ? page.items
-          : [...state.items, ...page.items];
+      final nextItems = reset ? page.items : [...state.items, ...page.items];
       emit(
         state.copyWith(
           items: nextItems,
@@ -100,17 +93,11 @@ class FriendsListCubit extends Cubit<FriendsListState> {
   }
 
   void setFriendshipAfter(DateTime? v) {
-    emit(state.copyWith(
-      updateFriendshipAfter: true,
-      friendshipAfter: v,
-    ));
+    emit(state.copyWith(updateFriendshipAfter: true, friendshipAfter: v));
   }
 
   void setFriendshipBefore(DateTime? v) {
-    emit(state.copyWith(
-      updateFriendshipBefore: true,
-      friendshipBefore: v,
-    ));
+    emit(state.copyWith(updateFriendshipBefore: true, friendshipBefore: v));
   }
 
   void clearFilters() {

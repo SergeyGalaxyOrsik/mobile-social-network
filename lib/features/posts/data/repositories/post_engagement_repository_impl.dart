@@ -11,11 +11,17 @@ class PostEngagementRepositoryImpl implements PostEngagementRepository {
   final PostsEngagementRemoteDataSource _remote;
 
   @override
-  Future<void> addPostReaction(String postId) {
-    return _remote.addPostReaction(
-      postId,
-      const CreatePostReactionDto(),
+  Future<RecordPostViewResult> recordPostView(String postId) async {
+    final dto = await _remote.recordPostView(postId);
+    return RecordPostViewResult(
+      recorded: dto.recorded,
+      distinctViewers: dto.distinctViewers,
     );
+  }
+
+  @override
+  Future<void> addPostReaction(String postId) {
+    return _remote.addPostReaction(postId, const CreatePostReactionDto());
   }
 
   @override

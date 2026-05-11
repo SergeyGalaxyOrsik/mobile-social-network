@@ -62,11 +62,7 @@ final class PostShareHelper {
       }
       if (!context.mounted) return;
       await SharePlus.instance.share(
-        ShareParams(
-          files: [
-            XFile(png.path, mimeType: 'image/png'),
-          ],
-        ),
+        ShareParams(files: [XFile(png.path, mimeType: 'image/png')]),
       );
     } catch (e, st) {
       debugPrint('PostShareHelper: $e\n$st');

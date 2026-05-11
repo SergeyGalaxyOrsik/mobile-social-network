@@ -19,6 +19,5 @@ class LocaleScope extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(LocaleScope oldWidget) =>
-      locale != oldWidget.locale;
+  bool updateShouldNotify(LocaleScope oldWidget) => locale != oldWidget.locale;
 }

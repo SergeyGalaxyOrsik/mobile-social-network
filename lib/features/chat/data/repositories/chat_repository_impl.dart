@@ -99,6 +99,12 @@ class ChatRepositoryImpl implements ChatRepository {
       _remote.deleteMessage(messageId);
 
   @override
+  Future<void> markMessageRead({
+    required String messageId,
+    required String peerUserId,
+  }) => _remote.markMessageRead(messageId: messageId, peerUserId: peerUserId);
+
+  @override
   Future<List<DirectBlock>> fetchBlocks() async {
     final dto = await _remote.listBlocks();
     return dto.items.map((e) => e.toEntity()).toList();

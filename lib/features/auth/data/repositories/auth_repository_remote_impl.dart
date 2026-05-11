@@ -21,9 +21,9 @@ class AuthRepositoryRemoteImpl implements AuthRepository {
     required AuthRemoteDataSource remote,
     required SharedPreferences preferences,
     Future<void> Function()? revokePushOnSignOut,
-  })  : _remote = remote,
-        _prefs = preferences,
-        _revokePushOnSignOut = revokePushOnSignOut;
+  }) : _remote = remote,
+       _prefs = preferences,
+       _revokePushOnSignOut = revokePushOnSignOut;
 
   final AuthRemoteDataSource _remote;
   final SharedPreferences _prefs;
@@ -31,6 +31,7 @@ class AuthRepositoryRemoteImpl implements AuthRepository {
 
   Future<void> _persistSession(AuthTokensResponseDto dto) async {
     await _prefs.setString(AppConstants.accessTokenKey, dto.accessToken);
+    await _prefs.setString(AppConstants.refreshTokenKey, dto.refreshToken);
     await _prefs.setString(_keyUserJson, jsonEncode(dto.user.toJson()));
     await _prefs.setString(_keyCurrentUserEmail, dto.user.email);
   }
@@ -95,13 +96,20 @@ class AuthRepositoryRemoteImpl implements AuthRepository {
 
   @override
   Future<void> signOut() async {
+    final refreshToken = _prefs.getString(AppConstants.refreshTokenKey);
     final revokePush = _revokePushOnSignOut;
     if (revokePush != null) {
       try {
         await revokePush();
       } catch (_) {}
     }
+    if (refreshToken != null && refreshToken.isNotEmpty) {
+      try {
+        await _remote.logout(refreshToken);
+      } catch (_) {}
+    }
     await _prefs.remove(AppConstants.accessTokenKey);
+    await _prefs.remove(AppConstants.refreshTokenKey);
     await _prefs.remove(_keyUserJson);
     await _prefs.remove(_keyCurrentUserEmail);
   }

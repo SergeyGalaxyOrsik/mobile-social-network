@@ -39,6 +39,29 @@ class AuthRemoteDataSource {
     }
   }
 
+  Future<AuthTokensResponseDto> refresh(String refreshToken) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/auth/refresh',
+        data: <String, dynamic>{'refreshToken': refreshToken},
+      );
+      return AuthTokensResponseDto.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  Future<void> logout(String refreshToken) async {
+    try {
+      await _dio.post<void>(
+        '/auth/logout',
+        data: <String, dynamic>{'refreshToken': refreshToken},
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
   Future<AuthUserViewDto> me() async {
     try {
       final response = await _dio.get<Map<String, dynamic>>('/auth/me');
@@ -49,10 +72,7 @@ class AuthRemoteDataSource {
   }
 
   /// Регистрация FCM-токена после входа (`docs/API_PUSH_EVENTS.md`).
-  Future<void> registerPushToken(
-    String fcmToken, {
-    String? platform,
-  }) async {
+  Future<void> registerPushToken(String fcmToken, {String? platform}) async {
     try {
       await _dio.post<void>(
         '/users/me/push-tokens',

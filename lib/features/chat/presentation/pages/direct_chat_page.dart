@@ -17,10 +17,7 @@ import 'package:mobile_social_network/features/media/data/media_upload_service.d
 import 'package:mobile_social_network/l10n/app_localizations.dart';
 
 class DirectChatPage extends StatefulWidget {
-  const DirectChatPage({
-    super.key,
-    required this.args,
-  });
+  const DirectChatPage({super.key, required this.args});
 
   final DirectChatRouteArgs args;
 
@@ -114,9 +111,10 @@ class _DirectChatPageState extends State<DirectChatPage> {
     if (list.isEmpty || !mounted) return;
     final max = MediaUploadConstants.maxMediaPerPost;
     final picked = list.map((x) => x.path).toList();
-    final merged = [...cubit.state.pendingMediaPaths, ...picked]
-        .take(max)
-        .toList();
+    final merged = [
+      ...cubit.state.pendingMediaPaths,
+      ...picked,
+    ].take(max).toList();
     cubit.setPendingMediaPaths(merged);
   }
 
@@ -131,7 +129,9 @@ class _DirectChatPageState extends State<DirectChatPage> {
     final max = MediaUploadConstants.maxMediaPerPost;
     if (current.length >= max) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.chatAttachLimitReached)),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.chatAttachLimitReached),
+        ),
       );
       return;
     }
@@ -178,8 +178,7 @@ class _DirectChatPageState extends State<DirectChatPage> {
         body: const Center(child: Text('Not signed in')),
       );
     }
-    final title =
-        widget.args.peerDisplayName?.trim().isNotEmpty == true
+    final title = widget.args.peerDisplayName?.trim().isNotEmpty == true
         ? widget.args.peerDisplayName!.trim()
         : widget.args.peerUserId;
     return BlocProvider(
@@ -199,9 +198,9 @@ class _DirectChatPageState extends State<DirectChatPage> {
             final msg = _mapChatError(l10n, state.lastError) != ''
                 ? _mapChatError(l10n, state.lastError)
                 : state.lastError!;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(msg)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(msg)));
             context.read<DirectChatCubit>().clearError();
           }
           if (state.messages.isNotEmpty) {
@@ -335,7 +334,8 @@ class _DirectChatPageState extends State<DirectChatPage> {
                           tooltip: l10n.chatMediaAttach,
                           onPressed: state.sending
                               ? null
-                              : () => _showAttachmentSheet(context, cubit, l10n),
+                              : () =>
+                                    _showAttachmentSheet(context, cubit, l10n),
                           icon: const Icon(Icons.attach_file_outlined),
                         ),
                         Expanded(
@@ -432,10 +432,7 @@ class _MessageBubble extends StatelessWidget {
                     }).toList(),
                   ),
                 if (message.body != null && message.body!.trim().isNotEmpty)
-                  SelectableText(
-                    message.body!,
-                    style: TextStyle(color: fg),
-                  ),
+                  SelectableText(message.body!, style: TextStyle(color: fg)),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

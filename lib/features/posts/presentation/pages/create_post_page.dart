@@ -8,6 +8,7 @@ import 'package:mobile_social_network/core/constants/media_upload_constants.dart
 import 'package:mobile_social_network/core/utils/prepublish_image_filter.dart';
 import 'package:mobile_social_network/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mobile_social_network/features/auth/presentation/bloc/auth_state.dart';
+import 'package:mobile_social_network/features/draft_posts/domain/repositories/draft_posts_repository.dart';
 import 'package:mobile_social_network/features/feed/presentation/cubit/feed_cubit.dart';
 import 'package:mobile_social_network/features/feed/presentation/cubit/publish_attachment.dart';
 import 'package:mobile_social_network/features/posts/domain/entities/post_visibility.dart';
@@ -37,9 +38,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
     setState(() {
       _selectedFiles
         ..clear()
-        ..addAll(
-          list.take(MediaUploadConstants.maxMediaPerPost),
-        );
+        ..addAll(list.take(MediaUploadConstants.maxMediaPerPost));
     });
   }
 
@@ -77,13 +76,12 @@ class _CreatePostPageState extends State<CreatePostPage> {
         final size = await f.length();
         if (size > MediaUploadConstants.maxFileBytes) {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('File too large')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('File too large')));
           return;
         }
-        final mime =
-            lookupMimeType(uploadPath) ?? 'application/octet-stream';
+        final mime = lookupMimeType(uploadPath) ?? 'application/octet-stream';
         attachments.add(
           PublishAttachment(
             path: uploadPath,
@@ -108,6 +106,19 @@ class _CreatePostPageState extends State<CreatePostPage> {
     }
   }
 
+  Future<void> _onSaveDraft() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty || text.length > _kMaxPostLength) return;
+    await context.read<DraftPostsRepository>().create(
+      content: text,
+      visibility: PostVisibility.public,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Draft saved')));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -119,6 +130,11 @@ class _CreatePostPageState extends State<CreatePostPage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          IconButton(
+            tooltip: 'Save draft',
+            onPressed: _isPublishing ? null : _onSaveDraft,
+            icon: const Icon(Icons.save_outlined),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: TextButton(
@@ -132,9 +148,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
               child: Text(
                 l10n.postButton,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.surface,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.surface,
+                ),
               ),
             ),
           ),
@@ -195,10 +211,7 @@ class _MediaPickerStrip extends StatelessWidget {
           for (var i = 0; i < files.length; i++)
             Padding(
               padding: const EdgeInsets.only(left: 8),
-              child: _ThumbTile(
-                file: files[i],
-                onRemove: () => onRemove(i),
-              ),
+              child: _ThumbTile(file: files[i], onRemove: () => onRemove(i)),
             ),
         ],
       ),
@@ -288,8 +301,7 @@ class _ThumbTile extends StatelessWidget {
             icon: const Icon(Icons.close, size: 18),
             onPressed: onRemove,
             style: IconButton.styleFrom(
-              backgroundColor:
-                  theme.colorScheme.surface.withValues(alpha: 0.9),
+              backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.9),
               foregroundColor: theme.colorScheme.onSurface,
               padding: EdgeInsets.zero,
               minimumSize: const Size(28, 28),

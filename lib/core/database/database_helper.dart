@@ -167,9 +167,7 @@ class DatabaseHelper {
       );
     }
     if (oldVersion < 8) {
-      await db.execute(
-        'ALTER TABLE feed_posts ADD COLUMN author_json TEXT',
-      );
+      await db.execute('ALTER TABLE feed_posts ADD COLUMN author_json TEXT');
     }
   }
 

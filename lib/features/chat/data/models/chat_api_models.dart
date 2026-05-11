@@ -46,7 +46,9 @@ class DirectMessageDto {
       media: rawMedia == null
           ? const []
           : rawMedia
-                .map((e) => ChatMediaItemDto.fromJson(e as Map<String, dynamic>))
+                .map(
+                  (e) => ChatMediaItemDto.fromJson(e as Map<String, dynamic>),
+                )
                 .where((m) => m.mediaId.isNotEmpty)
                 .toList(),
     );
@@ -80,10 +82,7 @@ class DirectConversationDto {
 }
 
 class DirectBlockDto {
-  const DirectBlockDto({
-    required this.userId,
-    required this.blockedAt,
-  });
+  const DirectBlockDto({required this.userId, required this.blockedAt});
 
   final String userId;
   final String blockedAt;

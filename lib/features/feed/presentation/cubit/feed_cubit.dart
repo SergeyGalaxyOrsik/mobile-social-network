@@ -18,15 +18,16 @@ class FeedCubit extends Cubit<FeedState> {
     required PostRepository postRepository,
     required PostEngagementRepository postEngagementRepository,
     required MediaUploadService mediaUploadService,
-  })  : _postRepository = postRepository,
-        _postEngagement = postEngagementRepository,
-        _mediaUpload = mediaUploadService,
-        super(const FeedState());
+  }) : _postRepository = postRepository,
+       _postEngagement = postEngagementRepository,
+       _mediaUpload = mediaUploadService,
+       super(const FeedState());
 
   final PostRepository _postRepository;
   final PostEngagementRepository _postEngagement;
   final MediaUploadService _mediaUpload;
   final _uuid = const Uuid();
+  final Set<String> _viewedPostIds = <String>{};
 
   UserEntity? _sessionUser;
 
@@ -122,6 +123,15 @@ class FeedCubit extends Cubit<FeedState> {
     }
   }
 
+  Future<void> recordPostView(String postId) async {
+    if (!_viewedPostIds.add(postId)) return;
+    try {
+      await _postEngagement.recordPostView(postId);
+    } catch (_) {
+      _viewedPostIds.remove(postId);
+    }
+  }
+
   void patchPostCommentsCount(String postId, int delta) {
     final idx = state.posts.indexWhere((p) => p.postId == postId);
     if (idx < 0) return;
@@ -155,20 +165,12 @@ class FeedCubit extends Cubit<FeedState> {
     required List<PublishAttachment> attachments,
   }) {
     if (attachments.length > MediaUploadConstants.maxMediaPerPost) {
-      emit(
-        state.copyWith(
-          lastPublishError: 'Too many attachments',
-        ),
-      );
+      emit(state.copyWith(lastPublishError: 'Too many attachments'));
       return;
     }
     for (final a in attachments) {
       if (a.sizeBytes > MediaUploadConstants.maxFileBytes) {
-        emit(
-          state.copyWith(
-            lastPublishError: 'File too large',
-          ),
-        );
+        emit(state.copyWith(lastPublishError: 'File too large'));
         return;
       }
     }
@@ -183,13 +185,15 @@ class FeedCubit extends Cubit<FeedState> {
       ),
     );
 
-    Future(() => _runPublishTask(
-          taskId: taskId,
-          userId: userId,
-          content: content,
-          visibility: visibility,
-          attachments: attachments,
-        ));
+    Future(
+      () => _runPublishTask(
+        taskId: taskId,
+        userId: userId,
+        content: content,
+        visibility: visibility,
+        attachments: attachments,
+      ),
+    );
   }
 
   Future<void> _runPublishTask({
@@ -211,8 +215,7 @@ class FeedCubit extends Cubit<FeedState> {
 
     try {
       final mediaIds = <String>[];
-      var totalBytes =
-          attachments.fold<int>(0, (a, x) => a + x.sizeBytes);
+      var totalBytes = attachments.fold<int>(0, (a, x) => a + x.sizeBytes);
       if (totalBytes == 0) {
         totalBytes = 1;
       }
@@ -225,9 +228,8 @@ class FeedCubit extends Cubit<FeedState> {
           contentType: a.contentType,
           fileSizeBytes: a.sizeBytes,
           onProgress: (fileProgress) {
-            final overall = (doneBytes + fileProgress * a.sizeBytes) /
-                totalBytes *
-                0.92;
+            final overall =
+                (doneBytes + fileProgress * a.sizeBytes) / totalBytes * 0.92;
             setProgress(overall);
           },
         );
@@ -264,14 +266,8 @@ class FeedCubit extends Cubit<FeedState> {
   }
 
   void _failTask(String taskId, String message) {
-    final without =
-        state.publishingTasks.where((t) => t.id != taskId).toList();
-    emit(
-      state.copyWith(
-        publishingTasks: without,
-        lastPublishError: message,
-      ),
-    );
+    final without = state.publishingTasks.where((t) => t.id != taskId).toList();
+    emit(state.copyWith(publishingTasks: without, lastPublishError: message));
   }
 
   /// Вызывать после обновления поста вне очереди (например редактирование).

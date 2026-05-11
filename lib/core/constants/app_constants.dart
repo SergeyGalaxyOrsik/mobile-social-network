@@ -7,4 +7,6 @@ abstract class AppConstants {
   static const String localeKey = 'locale';
 
   static const String accessTokenKey = 'access_token';
+
+  static const String refreshTokenKey = 'refresh_token';
 }

@@ -72,9 +72,9 @@ class _FriendsTabPageState extends State<FriendsTabPage>
         listener: (context, state) {
           final err = state.lastError;
           if (err != null && context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(err)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(err)));
             context.read<FriendRequestsCubit>().clearError();
           }
         },
@@ -151,7 +151,8 @@ class _RequestList extends StatelessWidget {
         itemBuilder: (context, index) {
           final item = items[index];
           final busy = processingId == item.requestId;
-          final highlight = incoming &&
+          final highlight =
+              incoming &&
               highlightRequestId != null &&
               highlightRequestId == item.requestId;
           return Card(
